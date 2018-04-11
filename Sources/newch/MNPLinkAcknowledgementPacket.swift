@@ -52,6 +52,11 @@ public struct MNPLinkAcknowledgementPacket: MNPPacket {
     }
 
     public func encode() -> Data {
-        return Data(bytes: [3, receivedSequenceNumber, receivedCreditNumber])
+        return Data(bytes: [
+            3,
+            MNPPacketType.LA.rawValue,
+            receivedSequenceNumber,
+            receivedCreditNumber
+        ])
     }
 }
