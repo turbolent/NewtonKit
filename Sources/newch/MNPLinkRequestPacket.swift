@@ -3,6 +3,13 @@ import Foundation
 
 // MNP / V.42 error correction T-REC-V.42-199303, Annex A
 
+// A.6.4.1 Link request (LR) frame
+//
+// The link request (LR) frame is used to establish an error-corrected connection
+// between two error-correcting entities with an active physical connection.
+// The LR frame is also used to negotiate operational parameters to be in effect
+// for the duration of the error-corrected connection (see A.7.1.5).
+
 // TABLE A.2/V.42: Link request header-field parameters
 
 public struct MNPLinkRequestPacket: MNPPacket {
@@ -16,6 +23,7 @@ public struct MNPLinkRequestPacket: MNPPacket {
 
 
     // A.6.4.1.3 Fixed parameter 2 – Constant parameter 1
+    //
     // This constant parameter shall be the third octet of the header field.
     // The value of this constant is an octet value of 2.
 
@@ -23,6 +31,7 @@ public struct MNPLinkRequestPacket: MNPPacket {
 
 
     // A.6.4.1.4 Variable parameter 1 – Constant parameter 2
+    //
     // This constant parameter shall be an octet sequence of value (1,6,1,0,0,0,0,255).
 
     private static let constantParameter2 =
@@ -30,6 +39,7 @@ public struct MNPLinkRequestPacket: MNPPacket {
 
 
     // A.6.4.1.5 Variable parameter 2 – Framing mode parameter
+    //
     // The framing mode parameter defines the framing mode to be used
     // on the error-corrected connection.
     //
