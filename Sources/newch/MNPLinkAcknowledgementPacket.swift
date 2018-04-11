@@ -3,6 +3,15 @@ import Foundation
 
 // MNP / V.42 error correction T-REC-V.42-199303, Annex A
 
+// A.6.4.2 Link acknowledgement (LA) frame
+//
+// The link acknowledgement (LA) frame is used to confirm the completion of the protocol
+// establishment phase of the alternative error-correcting procedure. The confirming LA
+// is sent by the error-correcting entity that sent the initiating LR frame.
+//
+// Upon sending or receiving the confirming LA of the connection-establishment,
+// three-message exchange, the error-correcting entity enters the data phase.
+
 // TABLE A.3b/V.42: Link acknowledgement header-field parameters (optimized data phase)
 
 public struct MNPLinkAcknowledgementPacket: MNPPacket {
