@@ -16,6 +16,11 @@ import Foundation
 
 public struct MNPLinkAcknowledgementPacket: MNPPacket {
 
+    public enum DecodingError: Error {
+        case invalidSize
+    }
+
+
     // A.6.4.2.1
     // Fixed parameter 0 - Length indication
     // The value of the length indication shall be [...] 3 in
@@ -32,7 +37,13 @@ public struct MNPLinkAcknowledgementPacket: MNPPacket {
     public let receivedSequenceNumber: UInt8
     public let receivedCreditNumber: UInt8
 
+
+    // data without header length and type field
     public init(data: Data) throws {
+        guard data.count >= 2 else {
+            throw DecodingError.invalidSize
+        }
+
         let receivedSequenceNumberIndex = data.startIndex
         receivedSequenceNumber = data[receivedSequenceNumberIndex]
 
