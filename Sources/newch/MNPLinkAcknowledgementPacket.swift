@@ -21,12 +21,41 @@ public struct MNPLinkAcknowledgementPacket: MNPPacket {
     }
 
 
-    // A.6.4.2.1
-    // Fixed parameter 0 - Length indication
-    // The value of the length indication shall be [...] 3 in
-    // an optimized data phase (see Table A.3b).
+    // A.6.4.2.3 Variable parameter 1 -
+    // Receive sequence number (non-optimized data phase)
+    //
+    // The receive sequence number parameter contains the value of the
+    // receive number, N(R), of the last correctly received LT frame.
+    // The value used for the receive sequence number in the protocol
+    // establishment phase confirming the LA shall be 0.
+
+    public let receivedSequenceNumber: UInt8
+
+
+    // A.6.4.2.4 Variable parameter 2 -
+    // Receive credit number (non-optimized data phase)
+    //
+    // The receive credit number parameter contains the value of the
+    // maximum number of LT frames that can be sent by an error-correcting
+    // entity before it must suspend sending LT frames and wait for an
+    // acknowledgement.
+    //
+    // The value used for the receive credit for the confirming LA is
+    // the value received as the receive credit in the response LR.
+
+    public let receivedCreditNumber: UInt8
+
+
+    public init(receivedSequenceNumber: UInt8,
+                receivedCreditNumber: UInt8) {
+
+        self.receivedSequenceNumber = receivedSequenceNumber
+        self.receivedCreditNumber = receivedCreditNumber
+    }
+
 
     // A.6.4.2.5 Fixed format for variable parameters 1 and 2 (optimized data phase)
+    //
     // When the fixed format LA frame facility is in effect during an optimized data phase,
     // the receive sequence number and the receive credit number are included in the fixed
     // part of the frame header field.
@@ -34,9 +63,11 @@ public struct MNPLinkAcknowledgementPacket: MNPPacket {
     // The received sequence number value octet is fixed parameter 2.
     // The received credit number value octet is fixed parameter 3.
 
-    public let receivedSequenceNumber: UInt8
-    public let receivedCreditNumber: UInt8
-
+    // A.6.4.2.1
+    // Fixed parameter 0 - Length indication
+    //
+    // The value of the length indication shall be [...] 3 in
+    // an optimized data phase (see Table A.3b).
 
     // data without header length and type field
     public init(data: Data) throws {
