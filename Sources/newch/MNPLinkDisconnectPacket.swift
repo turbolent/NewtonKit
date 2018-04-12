@@ -23,6 +23,11 @@ public struct MNPLinkDisconnectPacket: MNPPacket {
 
     public enum Reason: UInt8 {
 
+        // NOTE: not specified in V.42, but only sensible value
+        // for other protocol errors, as 4-254 are reserved,
+        // and this code is also sent by an MP130/2.0
+        case protocolError = 0
+
         // Protocol establishment phase error, LR expected but not received
         case protocolEstablishmentPhaseError = 1
 
@@ -33,9 +38,6 @@ public struct MNPLinkDisconnectPacket: MNPPacket {
         case incompatibleOrUnknownLRParameterValue = 3
 
         case userInitiatedDisconnect = 255
-
-        // NOTE: not specified in V.42, but sent by MP130/2.0
-        case zero = 0
     }
 
 
