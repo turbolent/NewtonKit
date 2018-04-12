@@ -1,9 +1,7 @@
 
 import Foundation
 
-
 // MNP / V.42 error correction T-REC-V.42-199303, Annex A
-
 
 public class MNPPacketLayer {
 
@@ -191,8 +189,8 @@ public class MNPPacketLayer {
                 return try MNPLinkAcknowledgementPacket(data: data)
             case .LD:
                 return try MNPLinkDisconnectPacket(data: data)
-            default:
-                throw DecodingError.invalidType
+            case .LT:
+                return try MNPLinkTransferPacket(data: data)
             }
         }
     }
