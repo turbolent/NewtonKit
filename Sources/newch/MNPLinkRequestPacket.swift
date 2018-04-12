@@ -15,10 +15,14 @@ import Foundation
 public struct MNPLinkRequestPacket: MNPPacket {
 
     public enum DecodingError: Error {
+        case invalidSize
+        case invalidMaxInfoLength
+        case invalidFramingMode
+    }
+
+    public enum ValidationError {
         case invalidConstantParameter1
         case invalidConstantParameter2
-        case invalidFramingMode(UInt8)
-        case invalidMaxInfoLength
     }
 
 
@@ -49,9 +53,12 @@ public struct MNPLinkRequestPacket: MNPPacket {
     // Two-way simultaneous, bit-oriented framing mode shall be
     // represented by framing mode 3.
 
-    public let framingMode: UInt8
+    public enum FramingMode: UInt8 {
+        case startStopOctetOriented = 2
+        case bitOriented = 3
+    }
 
-    private static let validFramingModes: ClosedRange<UInt8> = 2...3
+    public let framingMode: FramingMode
 
 
     // A.6.4.1.6 Variable parameter 3 –
@@ -92,41 +99,37 @@ public struct MNPLinkRequestPacket: MNPPacket {
     public let fixedFieldLTAndLAFrames: Bool
 
 
+    public let validationErrors: Set<ValidationError>
+
+
+    public init(framingMode: FramingMode,
+                maxOutstandingLTFrameCount: UInt8,
+                maxInfoLength: UInt16,
+                maxInfoLength256: Bool,
+                fixedFieldLTAndLAFrames: Bool) {
+
+        self.framingMode = framingMode
+        self.maxOutstandingLTFrameCount = maxOutstandingLTFrameCount
+        self.maxInfoLength = maxInfoLength
+        self.maxInfoLength256 = maxInfoLength256
+        self.fixedFieldLTAndLAFrames = fixedFieldLTAndLAFrames
+        validationErrors = []
+    }
+
     // data without header length and type field
     public init(data: Data) throws {
 
-        // check constant parameter 1
-        let constantParameter1Start = data.startIndex
-        let constantParameter1End = constantParameter1Start.advanced(by: 1)
-        let constantParameter1Range: Range<Data.Index> =
-            constantParameter1Start..<constantParameter1End
-        guard
-            data.subdata(in: constantParameter1Range)
-                == MNPLinkRequestPacket.constantParameter1
-        else {
-            throw DecodingError.invalidConstantParameter1
-        }
-
-        // check constant parameter 2
-        let constantParameter2Start = data.startIndex.advanced(by: 1)
-        let constantParameter2End =
-            constantParameter2Start
-                .advanced(by: MNPLinkRequestPacket.constantParameter2.count)
-        let constantParameter2Range: Range<Data.Index> =
-            constantParameter2Start..<constantParameter2End
-        guard
-            data.subdata(in: constantParameter2Range)
-                == MNPLinkRequestPacket.constantParameter2
-        else {
-            throw DecodingError.invalidConstantParameter2
+        guard data.count >= 22 else {
+            throw DecodingError.invalidSize
         }
 
         // decode and check framing mode
         let framingModeOffset = 11
-        framingMode = data[data.startIndex.advanced(by: framingModeOffset)]
-        guard MNPLinkRequestPacket.validFramingModes ~= framingMode else {
-            throw DecodingError.invalidFramingMode(framingMode)
+        let framingModeCode = data[data.startIndex.advanced(by: framingModeOffset)]
+        guard let framingMode = FramingMode(rawValue: framingModeCode) else {
+            throw DecodingError.invalidFramingMode
         }
+        self.framingMode = framingMode
 
         // decode maximum number outstanding LT frames
         let maxOutstandingLTFrameCountOffset = 14
@@ -151,7 +154,6 @@ public struct MNPLinkRequestPacket: MNPPacket {
         self.maxInfoLength = maxInfoLength
 
         // decode data phase optimization
-
         let dataPhaseOptimizationOffset = 21
         let dataPhaseOptimization =
             data[data.startIndex.advanced(by: dataPhaseOptimizationOffset)]
@@ -159,6 +161,40 @@ public struct MNPLinkRequestPacket: MNPPacket {
             dataPhaseOptimization & 0b00000001 == 0b01
         fixedFieldLTAndLAFrames =
             dataPhaseOptimization & 0b00000010 == 0b10
+
+        validationErrors = MNPLinkRequestPacket.validate(data: data)
+    }
+
+    private static func validate(data: Data) -> Set<ValidationError> {
+        var errors: Set<ValidationError> = Set()
+
+        // check constant parameter 1
+        let constantParameter1Start = data.startIndex
+        let constantParameter1End = constantParameter1Start.advanced(by: 1)
+        let constantParameter1Range: Range<Data.Index> =
+            constantParameter1Start..<constantParameter1End
+
+        if data.subdata(in: constantParameter1Range)
+            != MNPLinkRequestPacket.constantParameter1 {
+
+            errors.insert(.invalidConstantParameter1)
+        }
+
+        // check constant parameter 2
+        let constantParameter2Start = data.startIndex.advanced(by: 1)
+        let constantParameter2End =
+            constantParameter2Start
+                .advanced(by: MNPLinkRequestPacket.constantParameter2.count)
+        let constantParameter2Range: Range<Data.Index> =
+            constantParameter2Start..<constantParameter2End
+
+        if data.subdata(in: constantParameter2Range)
+            != MNPLinkRequestPacket.constantParameter2 {
+
+            errors.insert(.invalidConstantParameter2)
+        }
+
+        return errors
     }
 
     public func encode() -> Data {
@@ -166,7 +202,7 @@ public struct MNPLinkRequestPacket: MNPPacket {
         encoded.append(MNPPacketType.LR.rawValue)
         encoded.append(MNPLinkRequestPacket.constantParameter1)
         encoded.append(MNPLinkRequestPacket.constantParameter2)
-        encoded.append(contentsOf: [0x2, 0x1, framingMode])
+        encoded.append(contentsOf: [0x2, 0x1, framingMode.rawValue])
         encoded.append(contentsOf: [0x3, 0x1, maxOutstandingLTFrameCount])
         encoded.append(contentsOf: [0x4, 0x2])
         // TODO: verify encoding
