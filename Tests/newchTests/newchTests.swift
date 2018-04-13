@@ -140,7 +140,8 @@ class newchTests: XCTestCase {
             ("testPacketLayerWrite", testPacketLayerWrite),
             ("testLinkRequestPacket", testLinkRequestPacket),
             ("testCRC", testCRC),
-
+            ("testDockPacket1", testDockPacket1),
+            ("testDockPacket2", testDockPacket2),
         ]
     }
 }
