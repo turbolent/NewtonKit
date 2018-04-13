@@ -107,13 +107,14 @@ class newchTests: XCTestCase {
             0x64, 0x6f, 0x63, 0x6b,
             0x72, 0x74, 0x64, 0x6b,
             0x00, 0x00, 0x00, 0x04,
-            0x00, 0x00, 0x00, 0x09, 0x10
+            0x00, 0x00, 0x00, 0x09
         ])
 
         let decoded = try DockPacket(data: initialData)
         let expected = DockPacket(command: .requestToDock,
                                   data: Data(bytes: [0x00, 0x00, 0x00, 0x09]))
         XCTAssertEqual(decoded, expected)
+        XCTAssertEqual(expected.encode(), initialData)
     }
 
     func testDockPacket2() throws {
@@ -123,14 +124,14 @@ class newchTests: XCTestCase {
             0x64, 0x6f, 0x63, 0x6b,
             0x64, 0x72, 0x65, 0x73,
             0x00, 0x00, 0x00, 0x04,
-            0xff, 0xff, 0xc1, 0x7b, 0x10
+            0xff, 0xff, 0xc1, 0x7b
         ])
 
         let decoded = try DockPacket(data: initialData)
         let expected = DockPacket(command: .result,
                                   data: Data(bytes: [0xff, 0xff, 0xc1, 0x7b]))
         XCTAssertEqual(decoded, expected)
-
+        XCTAssertEqual(expected.encode(), initialData)
     }
 
     static var allTests : [(String, (newchTests) -> () throws -> Void)] {

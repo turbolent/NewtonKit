@@ -83,6 +83,15 @@ public struct DockPacket {
         self.data = data.subdata(in: dataStartIndex..<dataEndIndex)
     }
 
+    public func encode() -> Data {
+        var result = Data()
+        result.append(DockPacket.header)
+        result.append(command.rawValue.data(using: .ascii)!)
+        result.append(UInt32(data.count).bigEndianData)
+        result.append(data)
+        return result
+    }
+
     public enum Command: String {
 
         // Starting a Session
