@@ -5,8 +5,10 @@ import Foundation
 
 public class MNPConnectionLayer {
 
-    public enum ReadError: Error {
+    public enum Error: Swift.Error {
         case closed
+        case stateVariablesUninitialized
+        case invalidEstablishmentPhaseReceiveSequenceNumber
     }
 
     public enum State {
@@ -25,10 +27,93 @@ public class MNPConnectionLayer {
     }
 
     public var onWrite: ((MNPPacket) -> Void)?
+    public var onRead: ((Data) -> Void)?
     public var onClose: ((MNPLinkDisconnectPacket.Reason?) -> Void)?
 
     private var linkResponse: MNPLinkRequestPacket?
     private var resentLinkResponse = false
+
+
+    // A.7.5.6 Maximum number of octets in an information field (N401)
+    //
+    // The value of N401 shall indicate the maximum number of octets
+    // in the information field, excluding DLE octets (in start- stop,
+    // octet-oriented framing mode) [...] inserted for transparency,
+    // that an error- correcting entity is willing to accept from the
+    // correspondent entity.
+    //
+    // The value of N401 shall be determined during the protocol
+    // establishment phase by LR variable parameter 4 (see A.6.4.1.7).
+
+    private var maxInfoLength: UInt16 = 0
+
+
+    // A.7.5.7 Maximum number of outstanding LT frames (k)
+    //
+    // The value of k shall indicate the maximum number of sequentially
+    // numbered LT frames that the error-correcting entity may have
+    // outstanding (i.e. unacknowledged).
+    //
+    // The value of k shall be determined during the protocol establishment
+    // phase by LR variable parameter 3 (see A.6.4.1.6). T
+    // he value of k shall never exceed 255.
+
+    private var maxOutstandingLTFrameCount: UInt8 = 0
+
+
+    private struct StateVariables {
+
+        // A.6.3.1 Modulus
+        //
+        // [...] The modulus is 256 [...]
+
+        // A.6.3.2 Send state variable V(S)
+        //
+        // The send state variable V(S) denotes the sequence number of the next
+        // in-sequence LT frame to be transmitted. V(S) can take on the values 0
+        // through modulus minus 1. [...]
+
+        var send: UInt8
+
+        mutating func incrementSend() {
+            send = send &+ 1
+        }
+
+        // A.6.3.4 Receive state variable V(R)
+        //
+        // The receive state variable V(R) denotes the sequence number of the next
+        // in-sequence LT frame expected to be received. V(R) can take on the
+        // values 0 through modulus minus 1. [...]
+
+        var receive: UInt8
+
+        mutating func incrementReceive() {
+            receive = receive &+ 1
+        }
+
+
+        // A.6.3.10 Receive credit state variable R(k)
+        //
+        // The receive credit state variable R(k) denotes the number of LT frames
+        // the receiver is able to receive. [...]
+
+        var receiveCredit: UInt8
+
+
+        // A.6.3.12 Send credit state variable S(k)
+        //
+        // The send credit state variable S(k) denotes the number of LT frames
+        // the sender is able to transmit without receiving additional credit
+        // from the receiver. [...]
+
+        var sendCredit: UInt8
+    }
+
+    private var stateVariables: StateVariables? {
+        didSet {
+            print("State vars: \(stateVariables)")
+        }
+    }
 
     public init() {}
 
@@ -47,10 +132,10 @@ public class MNPConnectionLayer {
     // (the responder) shall be ready to respond to protocol messages immediately after
     // the physical connection is established.
 
-    public func read(packet: MNPPacket, handler: (Data) -> Void) throws {
+    public func read(packet: MNPPacket) throws {
 
         guard state != .closed else {
-            throw ReadError.closed
+            throw Error.closed
         }
 
         // A.7.2 Disconnect phase procedures
@@ -77,7 +162,7 @@ public class MNPConnectionLayer {
         case .idle:
             if let linkRequest = packet as? MNPLinkRequestPacket {
                 state = .establishmentPhase
-                handle(linkRequest: linkRequest)
+                handleIdle(linkRequest: linkRequest)
             }
 
         // [...] When an acknowledgement LA is received, the responder enters the
@@ -96,8 +181,20 @@ public class MNPConnectionLayer {
 
         case .establishmentPhase:
             switch packet {
-            case is MNPLinkAcknowledgementPacket:
+            case let acknowledgementPacket as MNPLinkAcknowledgementPacket:
+
                 state = .dataPhase
+
+                try handleEstablishmentPhase(linkAcknowledgement: acknowledgementPacket)
+
+                // A.7.3.3 Sending of an LA frame
+                //
+                // [...]
+                //
+                // Timer T404 shall be started when an error-correcting entity enters the data phase.
+
+                // TODO: start timer T404
+
             case is MNPLinkRequestPacket:
                 if resentLinkResponse {
                     disconnect(reason: .protocolEstablishmentPhaseError)
@@ -128,8 +225,23 @@ public class MNPConnectionLayer {
         // The LT and LA frames are used to transfer user data across an error-corrected connection.
 
         case .dataPhase:
-            // TODO:
-            fatalError()
+            switch packet {
+
+            case let linkTransfer as MNPLinkTransferPacket:
+                try handleDataPhase(linkTransfer: linkTransfer)
+
+            case let linkAcknowledgement as MNPLinkAcknowledgementPacket:
+                try handleDataPhase(linkAcknowledgement: linkAcknowledgement)
+
+            // A.7.3.2.1 Reception of invalid frames
+            //
+            // When an error-correcting entity receives an invalid frame (see A.5),
+            // it shall discard this frame.
+
+            default:
+                break
+
+            }
 
         case .closed:
             break
@@ -139,31 +251,9 @@ public class MNPConnectionLayer {
         }
     }
 
-    // A.7.2.1 User-initiated disconnect
+
+    // A.7.1 Protocol establishment phase procedures
     //
-    // At the end of user data transfer, the user may initiate disconnection of the
-    // error-corrected connection. The interface between the user and the error-correcting
-    // entity is beyond the scope of this Recommendation.
-    //
-    // A user-initiated disconnect may cause the error-correcting entity to send an LD
-    // to terminate the error-corrected connection. After sending the LD or immediately
-    // if the LD is not sent, the error-correcting entity shall terminate the physical
-    // connection. It is recommended that the LD frame not be sent in order to promote
-    // proper interworking with the installed base of error-correcting DCEs.
-
-    func disconnect(reason: MNPLinkDisconnectPacket.Reason = .userInitiatedDisconnect) {
-        write(packet: MNPLinkDisconnectPacket(reason: reason))
-        close(reason: reason)
-    }
-
-    // no reason indicates a LD packet was received
-    private func close(reason: MNPLinkDisconnectPacket.Reason? = nil) {
-        // TODO: stop timers, etc.
-
-        state = .closed
-        onClose?(reason)
-    }
-
     // A.7.1.3 Responder procedure
     //
     // [...]
@@ -206,7 +296,7 @@ public class MNPConnectionLayer {
     // When the responder sends its response LR, it includes only those parameters which it both
     // received and understood.
 
-    private func handle(linkRequest: MNPLinkRequestPacket) {
+    private func handleIdle(linkRequest: MNPLinkRequestPacket) {
 
         // ensure constant parameter 1 is correct.
         guard !linkRequest.validationErrors.contains(.invalidConstantParameter1) else {
@@ -225,6 +315,30 @@ public class MNPConnectionLayer {
             return
         }
 
+        // A.7.5.6 Maximum number of octets in an information field (N401)
+        //
+        // [...]
+        // The value of N401 shall be determined during the protocol
+        // establishment phase by LR variable parameter 4 (see A.6.4.1.7).
+
+        maxInfoLength = linkRequest.maxInfoLength256
+            ? 256
+            : linkRequest.maxInfoLength
+
+        // A.7.5.7 Maximum number of outstanding LT frames (k)
+        //
+        // [...]
+        // The value of k shall be determined during the protocol
+        // establishment phase by LR variable parameter 3 (see A.6.4.1.6).
+
+        maxOutstandingLTFrameCount =
+            linkRequest.maxOutstandingLTFrameCount
+
+        sendLinkResponse(linkRequest: linkRequest)
+    }
+
+
+    private func sendLinkResponse(linkRequest: MNPLinkRequestPacket) {
         // create a new packet, to ensure correct constant parameters are encoded
         let linkResponse = MNPLinkRequestPacket(
             framingMode: linkRequest.framingMode,
@@ -237,5 +351,201 @@ public class MNPConnectionLayer {
         self.linkResponse = linkResponse
 
         write(packet: linkResponse)
+    }
+
+
+    private func handleEstablishmentPhase(linkAcknowledgement: MNPLinkAcknowledgementPacket) throws {
+
+        // A.6.4.2.3 Variable parameter 1 - Receive sequence number (non-optimized data phase)
+        //
+        // [...] The value used for the receive sequence number in the protocol establishment phase
+        // confirming the LA shall be 0.
+
+        guard linkAcknowledgement.receiveSequenceNumber == 0 else {
+            throw Error.invalidEstablishmentPhaseReceiveSequenceNumber
+        }
+
+        // A.6.3.2 Send state variable V(S)
+        //
+        // Upon data phase initialization, V(S) is set to 1.
+
+        let send: UInt8 = 1
+
+        // A.6.3.4 Receive state variable V(R)
+        //
+        // Upon data phase initialization, V(R) is set to 1.
+
+        let receive: UInt8 = 1
+
+        // A.6.3.10 Receive credit state variable R(k)
+        //
+        // [...] k (the maximum number of outstanding LT frames). [...]
+        // When the error-correcting entity enters the data phase,
+        // R(k) is set equal to k.
+
+        let receiveCredit = maxOutstandingLTFrameCount
+
+        // A.6.3.12 Send credit state variable S(k)
+        //
+        // [...] k (the maximum number of outstanding LT frames). [...]
+        // Upon data phase initialization, S(k) is set to k.
+
+        let sendCredit = maxOutstandingLTFrameCount
+
+        stateVariables = StateVariables(send: send,
+                                        receive: receive,
+                                        receiveCredit: receiveCredit,
+                                        sendCredit: sendCredit)
+    }
+
+
+    // A.7.3.2 Receiving an LT frame
+    //
+    // When an error-correcting entity receives a valid LT frame whose send sequence
+    // number N(S) is equal to the local receive state variable V(R),
+    // the error-correcting entity will accept the information field of this frame
+    // and increment by one, modulo 256, its receive state variable V(R).
+    //
+    // Reception of an LT frame will start timer T402 if timer T402 is not already running.
+    //
+    // Reception of an LT frame may also cause transmission of an acknowledgement (LA)
+    // frame (see A.7.3.3).
+
+    private func handleDataPhase(linkTransfer: MNPLinkTransferPacket) throws {
+
+        guard stateVariables != nil else {
+            throw Error.stateVariablesUninitialized
+        }
+
+        // A.7.3.2.2 Reception of out-of-sequence LT frames
+        //
+        // When an error-correcting entity receives a valid LT frame whose send
+        // sequence number N(S) is not equal to the current receive state variable V(R),
+        // the error-correcting entity shall discard the information field of the LT frame
+        // and transmit an LA frame as described in A.7.3.3.
+        //
+        // The first reception of an LT frame with N(S) = V(R) - 1, however, is ignored
+        // and does not cause transmission of an LA frame.
+
+        guard linkTransfer.sendSequenceNumber == stateVariables?.receive else {
+
+            // TODO: only send LA if necessary
+            try sendLinkAcknowledgement()
+            return
+        }
+
+        // A.7.3.2.3 Reception of LT frames without receive credit
+        //
+        // When an error-correcting entity receives a valid LT frame when the receive credit R(k) = 0,
+        // the error-correcting entity shall discard the information field of the LT frame
+        // and transmit an LA frame as described in A.7.3.3.
+
+        guard (stateVariables?.receiveCredit ?? 0) > 0 else {
+            try sendLinkAcknowledgement()
+            return
+        }
+
+        stateVariables?.incrementReceive()
+
+        // TODO: start T402
+
+        onRead?(linkTransfer.information)
+
+        // NOTE: according to the spec we should be able to hold of acknowledging
+        // every packet, but testing with a MP130/2.0 required it
+        try sendLinkAcknowledgement()
+    }
+
+
+    // A.7.3.4 Receiving an LA frame
+    //
+    // When an LA frame is received, the receiving error-correcting entity will consider the N(R)
+    // contained in this frame as an acknowledgement for all LT frames it has transmitted with
+    // an N(S) up to and including the received N(R). Timer T401 will be stopped if no additional
+    // LT frames remain unacknowledged, i.e. the received LA frame acknowledges all outstanding
+    // LT frames. Timer T401 will be restarted if additional LT frames remain unacknowledged.
+    //
+    // An error-correcting entity that receives an LA frame uses the N(k) contained in the frame,
+    // minus the number of still unacknowledged LT frames in transit, as the new S(k) value.
+
+    private func handleDataPhase(linkAcknowledgement: MNPLinkAcknowledgementPacket) throws {
+
+        guard stateVariables != nil else {
+            throw Error.stateVariablesUninitialized
+        }
+
+        // TODO: introduce unacknowledgedPacketCount, update here
+
+        // TODO: chesubtract one, as send is initially 1?
+        if linkAcknowledgement.receiveSequenceNumber < (stateVariables?.send ?? 1) {
+            // TODO: restart timer T401
+        } else {
+            // TODO: stop timer T401
+        }
+
+        // TODO: subtract unacknowledgedPacketCount
+        stateVariables?.sendCredit = linkAcknowledgement.receiveCreditNumber
+    }
+
+
+    // A.7.3.3 Sending of an LA frame
+    //
+    // An error-correcting entity sends an LA frame to acknowledge successful reception
+    // of one or more LT frames or to signal the correspondent entity of a condition which
+    // may require retransmission of one or more LT frames. The LA frame also communicates
+    // the receiverís ability to accept additional LT frames.
+    //
+    // [...]
+    //
+    // Timer T404 shall be restarted whenever an LA frame is sent.
+
+    private func sendLinkAcknowledgement() throws {
+
+        guard let stateVariables = stateVariables else {
+            throw Error.stateVariablesUninitialized
+        }
+
+        // A.6.3.5 Receive sequence number N(R)
+        //
+        // All LA frames contain N(R), the send sequence number of the last received LT frame.
+        // At the time that an LA frame is designated for transmission, the value of N(R) is
+        // set equal to the current value of the receive state variable V(R) - 1.
+        //
+        // N(R) indicates that the error-correcting entity transmitting the N(R) has received
+        // correctly all LT frames numbered up to and including N(R).
+
+        let receiveSequenceNumber = stateVariables.receive - 1
+        let receiveCreditNumber = stateVariables.receiveCredit
+
+        write(packet: MNPLinkAcknowledgementPacket(receiveSequenceNumber: receiveSequenceNumber,
+                                                   receiveCreditNumber: receiveCreditNumber))
+
+        // TODO: restart T404
+    }
+
+
+    // A.7.2.1 User-initiated disconnect
+    //
+    // At the end of user data transfer, the user may initiate disconnection of the
+    // error-corrected connection. The interface between the user and the error-correcting
+    // entity is beyond the scope of this Recommendation.
+    //
+    // A user-initiated disconnect may cause the error-correcting entity to send an LD
+    // to terminate the error-corrected connection. After sending the LD or immediately
+    // if the LD is not sent, the error-correcting entity shall terminate the physical
+    // connection. It is recommended that the LD frame not be sent in order to promote
+    // proper interworking with the installed base of error-correcting DCEs.
+
+    func disconnect(reason: MNPLinkDisconnectPacket.Reason = .userInitiatedDisconnect) {
+        write(packet: MNPLinkDisconnectPacket(reason: reason))
+        close(reason: reason)
+    }
+
+    // no reason indicates a LD packet was received
+    private func close(reason: MNPLinkDisconnectPacket.Reason? = nil) {
+        // TODO: stop timers, etc.
+
+        state = .closed
+        onClose?(reason)
     }
 }
