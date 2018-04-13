@@ -303,3 +303,12 @@ public struct DockPacket {
         case updatingStoresSession
     }
 }
+
+
+extension DockPacket: Equatable {
+
+    public static func == (lhs: DockPacket, rhs: DockPacket) -> Bool {
+        return lhs.command == rhs.command
+            && lhs.data == rhs.data
+    }
+}
