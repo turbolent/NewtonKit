@@ -35,8 +35,12 @@ public struct DockPacket {
     private static let boundary = 4
 
     public let command: Command
-    public let length: UInt32
     public let data: Data
+
+    public init(command: Command, data: Data) {
+        self.command = command
+        self.data = data
+    }
 
     public init(data: Data) throws {
 
@@ -72,7 +76,6 @@ public struct DockPacket {
         guard let length = UInt32(bigEndianData: lengthData) else {
             throw DecodingError.invalidLength
         }
-        self.length = length
 
         // decode data
         let dataStartIndex = lengthEndIndex
