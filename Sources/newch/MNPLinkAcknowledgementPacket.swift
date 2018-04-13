@@ -29,7 +29,7 @@ public struct MNPLinkAcknowledgementPacket: MNPPacket {
     // The value used for the receive sequence number in the protocol
     // establishment phase confirming the LA shall be 0.
 
-    public let receivedSequenceNumber: UInt8
+    public let receiveSequenceNumber: UInt8
 
 
     // A.6.4.2.4 Variable parameter 2 -
@@ -43,14 +43,18 @@ public struct MNPLinkAcknowledgementPacket: MNPPacket {
     // The value used for the receive credit for the confirming LA is
     // the value received as the receive credit in the response LR.
 
-    public let receivedCreditNumber: UInt8
+    // A.6.3.11 Receive credit number N(k)
+    //
+    // Only LA frames contains N(k). [...]
+
+    public let receiveCreditNumber: UInt8
 
 
-    public init(receivedSequenceNumber: UInt8,
-                receivedCreditNumber: UInt8) {
+    public init(receiveSequenceNumber: UInt8,
+                receiveCreditNumber: UInt8) {
 
-        self.receivedSequenceNumber = receivedSequenceNumber
-        self.receivedCreditNumber = receivedCreditNumber
+        self.receiveSequenceNumber = receiveSequenceNumber
+        self.receiveCreditNumber = receiveCreditNumber
     }
 
 
@@ -75,19 +79,19 @@ public struct MNPLinkAcknowledgementPacket: MNPPacket {
             throw DecodingError.invalidSize
         }
 
-        let receivedSequenceNumberIndex = data.startIndex
-        receivedSequenceNumber = data[receivedSequenceNumberIndex]
+        let receiveSequenceNumberIndex = data.startIndex
+        receiveSequenceNumber = data[receiveSequenceNumberIndex]
 
-        let receivedCreditNumberIndex = data.startIndex.advanced(by: 1)
-        receivedCreditNumber = data[receivedCreditNumberIndex]
+        let receiveCreditNumberIndex = data.startIndex.advanced(by: 1)
+        receiveCreditNumber = data[receiveCreditNumberIndex]
     }
 
     public func encode() -> Data {
         return Data(bytes: [
             3,
             MNPPacketType.LA.rawValue,
-            receivedSequenceNumber,
-            receivedCreditNumber
+            receiveSequenceNumber,
+            receiveCreditNumber
         ])
     }
 }
