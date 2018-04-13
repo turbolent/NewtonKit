@@ -141,14 +141,10 @@ public struct MNPLinkRequestPacket: MNPPacket {
         let maxInfoLengthStart =
             data.startIndex.advanced(by: maxInfoLengthOffset)
         let maxInfoLengthEnd =
-            maxInfoLengthStart.advanced(by: 1)
-        // TODO: verify decoding
-        guard
-            let maxInfoLength = UInt16(littleEndianBytes: [
-                data[maxInfoLengthStart],
-                data[maxInfoLengthEnd]
-            ])
-        else {
+            maxInfoLengthStart.advanced(by: 2)
+        let maxInfoLengthData =
+            data.subdata(in: maxInfoLengthStart..<maxInfoLengthEnd)
+        guard let maxInfoLength = UInt16(littleEndianData: maxInfoLengthData) else {
             throw DecodingError.invalidMaxInfoLength
         }
         self.maxInfoLength = maxInfoLength
@@ -206,7 +202,7 @@ public struct MNPLinkRequestPacket: MNPPacket {
         encoded.append(contentsOf: [0x3, 0x1, maxOutstandingLTFrameCount])
         encoded.append(contentsOf: [0x4, 0x2])
         // TODO: verify encoding
-        encoded.append(contentsOf: maxInfoLength.littleEndianBytes)
+        encoded.append(maxInfoLength.littleEndianData)
         var dataPhaseOptimization: UInt8 = 0
         if maxInfoLength256 {
             dataPhaseOptimization |= 0b1

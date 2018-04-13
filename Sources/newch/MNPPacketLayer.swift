@@ -208,7 +208,7 @@ public class MNPPacketLayer {
         }
         result.append(contentsOf: MNPPacketLayer.endFlagSequence)
         crc = crc16(input: .ETX, crc: crc)
-        result.append(contentsOf: crc.littleEndianBytes)
+        result.append(crc.littleEndianData)
         return result
     }
 }
