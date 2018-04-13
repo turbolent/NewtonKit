@@ -100,6 +100,39 @@ class newchTests: XCTestCase {
         XCTAssertEqual(crc16(input: [UInt8]("ZYX".utf8)), 0xb91b)
     }
 
+    func testDockPacket1() throws {
+
+        let initialData = Data(bytes: [
+            0x6e, 0x65, 0x77, 0x74,
+            0x64, 0x6f, 0x63, 0x6b,
+            0x72, 0x74, 0x64, 0x6b,
+            0x00, 0x00, 0x00, 0x04,
+            0x00, 0x00, 0x00, 0x09, 0x10
+        ])
+
+        let decoded = try DockPacket(data: initialData)
+        let expected = DockPacket(command: .requestToDock,
+                                  data: Data(bytes: [0x00, 0x00, 0x00, 0x09]))
+        XCTAssertEqual(decoded, expected)
+    }
+
+    func testDockPacket2() throws {
+
+        let initialData = Data(bytes: [
+            0x6e, 0x65, 0x77, 0x74,
+            0x64, 0x6f, 0x63, 0x6b,
+            0x64, 0x72, 0x65, 0x73,
+            0x00, 0x00, 0x00, 0x04,
+            0xff, 0xff, 0xc1, 0x7b, 0x10
+        ])
+
+        let decoded = try DockPacket(data: initialData)
+        let expected = DockPacket(command: .result,
+                                  data: Data(bytes: [0xff, 0xff, 0xc1, 0x7b]))
+        XCTAssertEqual(decoded, expected)
+
+    }
+
     static var allTests : [(String, (newchTests) -> () throws -> Void)] {
         return [
             ("testPacketLayerRead", testPacketLayerRead),
