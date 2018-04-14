@@ -38,6 +38,13 @@ public struct MNPLinkTransferPacket: MNPPacket {
     public let information: Data
 
 
+    public init(sendSequenceNumber: UInt8,
+                information: Data) {
+        self.sendSequenceNumber = sendSequenceNumber
+        self.information = information
+    }
+
+
     // A.6.6.1.4 - Fixed format for variable parameter 1 (optimized data phase)
     //
     // When the fixed format LT frame facility is in effect during an
@@ -59,10 +66,12 @@ public struct MNPLinkTransferPacket: MNPPacket {
     }
 
     public func encode() -> Data {
-        return Data(bytes: [
+        var result = Data(bytes: [
             2,
             MNPPacketType.LT.rawValue,
             sendSequenceNumber
         ])
+        result.append(information)
+        return result
     }
 }
