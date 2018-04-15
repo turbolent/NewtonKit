@@ -83,16 +83,18 @@ public class MNPPacketLayer {
                     state = .outside(offset: newOffset)
                 }
             case .inside:
-                rawPacket.append(byte)
                 if byte == .DLE {
                     state = .insideDLE
                 } else {
+                    rawPacket.append(byte)
                     rawPacket.updateCalculatedCRC(byte)
                 }
             case .insideDLE:
                 switch byte {
                 case .DLE:
                     state = .inside
+                    rawPacket.append(byte)
+                    rawPacket.updateCalculatedCRC(byte)
                 case .ETX:
                     rawPacket.updateCalculatedCRC(byte)
                     state = .endETX
@@ -105,6 +107,8 @@ public class MNPPacketLayer {
             case .endCRC1:
                 leavePacket()
                 rawPacket.updateReceivedCRC(byte)
+                // TODO: always call handler,
+                // handle incorrect CRC match in higher level
                 if rawPacket.crcMatches {
                     let packet = try rawPacket.decode()
                     handler(packet)
@@ -132,7 +136,7 @@ public class MNPPacketLayer {
         }
 
         mutating func updateReceivedCRC(_ byte: UInt8) {
-            receivedCRC += UInt16(byte) << 8
+            receivedCRC |= UInt16(byte) << 8
         }
 
         var crcMatches: Bool {
