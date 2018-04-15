@@ -589,7 +589,7 @@ public class MNPConnectionLayer {
     // If S(k) = 0, the error-correcting entity will not transmit any LT frames
     // until S(k) is updated to a non-zero value through the receipt of an LA frame.
 
-    public func sendLinkTransfer(data: Data) throws {
+    private func sendLinkTransfer(data: Data) throws {
 
         guard data.count <= maxInfoLength else {
             throw Error.invalidLinkTransferDataCount
@@ -629,8 +629,13 @@ public class MNPConnectionLayer {
         // TODO: start timer T401
     }
 
+    public func write(data: Data) throws {
+        for information in data.chunk(n: Int(maxInfoLength)) {
+            try sendLinkTransfer(data: information)
+        }
+    }
 
-    public func write(packet: MNPPacket) {
+    private func write(packet: MNPPacket) {
 
         // TODO:
         onWrite?(packet)
@@ -649,7 +654,11 @@ public class MNPConnectionLayer {
     // connection. It is recommended that the LD frame not be sent in order to promote
     // proper interworking with the installed base of error-correcting DCEs.
 
-    func disconnect(reason: MNPLinkDisconnectPacket.Reason = .userInitiatedDisconnect) {
+    public func disconnect() {
+        disconnect(reason: .userInitiatedDisconnect)
+    }
+
+    private func disconnect(reason: MNPLinkDisconnectPacket.Reason) {
         write(packet: MNPLinkDisconnectPacket(reason: reason))
         close(reason: reason)
     }
