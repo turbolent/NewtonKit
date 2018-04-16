@@ -89,6 +89,14 @@ public struct RawDockPacket {
         result.append(command.rawValue.data(using: .ascii)!)
         result.append(UInt32(data.count).bigEndianData)
         result.append(data)
+
+        // pad to boundary
+        let boundaryRemainder = data.count % RawDockPacket.boundary
+        if boundaryRemainder != 0 {
+            let padding = RawDockPacket.boundary - boundaryRemainder
+            result.append(Data(repeating: 0, count: padding))
+        }
+
         return result
     }
 
