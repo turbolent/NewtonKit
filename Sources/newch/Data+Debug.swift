@@ -10,15 +10,17 @@ extension Data {
 
     public var hexDump: String {
         let subChunkWidth = 8
+        let chunkWidth = subChunkWidth * 2
+
         func pad(_ subChunk: String) -> String {
             return subChunk.padding(toLength: subChunkWidth * 3 - 1,
                                     withPad: " ",
                                     startingAt: 0)
         }
-        return chunk(n: subChunkWidth * 2)
+        return chunk(n: chunkWidth)
             .enumerated()
             .map { offset, chunkData in
-                let offsetFormatted = String(format: "%08x", offset)
+                let offsetFormatted = String(format: "%08x", offset * chunkWidth)
                 let subChunks = chunkData.chunk(n: subChunkWidth)
                 let subChunk1Formatted =
                     pad(subChunks[0].hexLine)
