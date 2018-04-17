@@ -2,7 +2,7 @@
 import Foundation
 
 
-public struct RequestToDockPacket: DockPacket, Equatable {
+public struct RequestToDockPacket: DecodableDockPacket, Equatable {
 
     public static let command: DockCommand = .requestToDock
 

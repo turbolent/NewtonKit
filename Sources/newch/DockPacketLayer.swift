@@ -38,9 +38,9 @@ public class DockPacketLayer {
     private static let boundary = 4
     private static let minDataCount = minFieldCount * boundary
 
-    private static let allDockPacketTypes: [DockPacket.Type] = [
+    private static let allDockPacketTypes: [DecodableDockPacket.Type] = [
         RequestToDockPacket.self,
-        InitiateDockingPacket.self,
+        NewtonNamePacket.self,
         ResultPacket.self
     ]
 
@@ -51,7 +51,7 @@ public class DockPacketLayer {
 
     private var rawData = Data()
 
-    public func read(data additionalData: Data, handler: (DockPacket) -> Void) throws {
+    public func read(data additionalData: Data, handler: (DecodableDockPacket) -> Void) throws {
 
         rawData.append(additionalData)
 
@@ -109,7 +109,7 @@ public class DockPacketLayer {
         }
     }
 
-    private static func decode(command: DockCommand, data: Data) throws -> DockPacket? {
+    private static func decode(command: DockCommand, data: Data) throws -> DecodableDockPacket? {
         return try commands[command]?.init(data: data)
     }
 

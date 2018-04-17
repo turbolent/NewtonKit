@@ -28,18 +28,6 @@ public struct InitiateDockingPacket: DockPacket, Equatable {
         self.sessionType = sessionType
     }
 
-    public init(data: Data) throws {
-        guard let sessionTypeCode = UInt32(bigEndianData: data) else {
-            throw DecodingError.invalidSessionTypeData
-        }
-
-        guard let sessionType = SessionType(rawValue: sessionTypeCode) else {
-            throw DecodingError.invalidSessionType
-        }
-
-        self.init(sessionType: sessionType)
-    }
-
     public func encode() -> Data? {
         return sessionType.rawValue.bigEndianData
     }
