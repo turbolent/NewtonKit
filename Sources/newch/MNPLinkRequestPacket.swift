@@ -106,14 +106,15 @@ public struct MNPLinkRequestPacket: MNPPacket {
                 maxOutstandingLTFrameCount: UInt8,
                 maxInfoLength: UInt16,
                 maxInfoLength256: Bool,
-                fixedFieldLTAndLAFrames: Bool) {
+                fixedFieldLTAndLAFrames: Bool,
+                validationErrors: Set<ValidationError>) {
 
         self.framingMode = framingMode
         self.maxOutstandingLTFrameCount = maxOutstandingLTFrameCount
         self.maxInfoLength = maxInfoLength
         self.maxInfoLength256 = maxInfoLength256
         self.fixedFieldLTAndLAFrames = fixedFieldLTAndLAFrames
-        validationErrors = []
+        self.validationErrors = validationErrors
     }
 
     // data without header length and type field
@@ -129,11 +130,10 @@ public struct MNPLinkRequestPacket: MNPPacket {
         guard let framingMode = FramingMode(rawValue: framingModeCode) else {
             throw DecodingError.invalidFramingMode
         }
-        self.framingMode = framingMode
 
         // decode maximum number outstanding LT frames
         let maxOutstandingLTFrameCountOffset = 14
-        maxOutstandingLTFrameCount =
+        let maxOutstandingLTFrameCount =
             data[data.startIndex.advanced(by: maxOutstandingLTFrameCountOffset)]
 
         // decode maximum information length
@@ -147,18 +147,24 @@ public struct MNPLinkRequestPacket: MNPPacket {
         guard let maxInfoLength = UInt16(littleEndianData: maxInfoLengthData) else {
             throw DecodingError.invalidMaxInfoLength
         }
-        self.maxInfoLength = maxInfoLength
 
         // decode data phase optimization
         let dataPhaseOptimizationOffset = 21
         let dataPhaseOptimization =
             data[data.startIndex.advanced(by: dataPhaseOptimizationOffset)]
-        maxInfoLength256 =
+        let maxInfoLength256 =
             dataPhaseOptimization & 0b00000001 == 0b01
-        fixedFieldLTAndLAFrames =
+        let fixedFieldLTAndLAFrames =
             dataPhaseOptimization & 0b00000010 == 0b10
 
-        validationErrors = MNPLinkRequestPacket.validate(data: data)
+        let validationErrors = MNPLinkRequestPacket.validate(data: data)
+
+        self.init(framingMode: framingMode,
+                  maxOutstandingLTFrameCount: maxOutstandingLTFrameCount,
+                  maxInfoLength: maxInfoLength,
+                  maxInfoLength256: maxInfoLength256,
+                  fixedFieldLTAndLAFrames: fixedFieldLTAndLAFrames,
+                  validationErrors: validationErrors)
     }
 
     private static func validate(data: Data) -> Set<ValidationError> {

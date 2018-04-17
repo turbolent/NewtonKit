@@ -67,7 +67,8 @@ public struct MNPLinkDisconnectPacket: MNPPacket {
         guard let reason = Reason(rawValue: reasonCode) else {
             throw DecodingError.invalidReason
         }
-        self.reason = reason
+
+        self.init(reason: reason)
     }
 
     public func encode() -> Data {

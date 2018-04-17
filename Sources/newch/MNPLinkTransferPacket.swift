@@ -60,9 +60,11 @@ public struct MNPLinkTransferPacket: MNPPacket {
         }
 
         let sendSequenceNumberIndex = data.startIndex
-        sendSequenceNumber = data[sendSequenceNumberIndex]
+        let sendSequenceNumber = data[sendSequenceNumberIndex]
+        let information = data.dropFirst()
 
-        information = data.dropFirst()
+        self.init(sendSequenceNumber: sendSequenceNumber,
+                  information: information)
     }
 
     public func encode() -> Data {

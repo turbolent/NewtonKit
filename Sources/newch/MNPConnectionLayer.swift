@@ -356,7 +356,8 @@ public class MNPConnectionLayer {
             maxOutstandingLTFrameCount: linkRequest.maxOutstandingLTFrameCount,
             maxInfoLength: linkRequest.maxInfoLength,
             maxInfoLength256: linkRequest.maxInfoLength256,
-            fixedFieldLTAndLAFrames: linkRequest.fixedFieldLTAndLAFrames
+            fixedFieldLTAndLAFrames: linkRequest.fixedFieldLTAndLAFrames,
+            validationErrors: Set()
         )
 
         self.linkResponse = linkResponse

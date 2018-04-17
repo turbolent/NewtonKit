@@ -80,10 +80,10 @@ public struct MNPLinkAcknowledgementPacket: MNPPacket {
         }
 
         let receiveSequenceNumberIndex = data.startIndex
-        receiveSequenceNumber = data[receiveSequenceNumberIndex]
+        let receiveCreditNumberIndex = receiveSequenceNumberIndex.advanced(by: 1)
 
-        let receiveCreditNumberIndex = data.startIndex.advanced(by: 1)
-        receiveCreditNumber = data[receiveCreditNumberIndex]
+        self.init(receiveSequenceNumber: data[receiveSequenceNumberIndex],
+                  receiveCreditNumber: data[receiveCreditNumberIndex])
     }
 
     public func encode() -> Data {
