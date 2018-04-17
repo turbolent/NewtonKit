@@ -33,19 +33,20 @@ class newchTests: XCTestCase {
             0x10, 0x3, 0xb9, 0xbf  // end sequence with CRC
         ])
 
-        let packetDecoded = expectation(description: "packet is decoded")
-        var packet: MNPPacket?
+        var readPacket: MNPPacket?
 
         try layer.read(data: data) {
-            guard packet == nil else {
+            guard readPacket == nil else {
                 XCTFail("More than one packet was decoded")
                 return
             }
-            packet = $0
-            packetDecoded.fulfill()
+            readPacket = $0
         }
 
-        wait(for: [packetDecoded], timeout: 0)
+        guard let packet = readPacket else {
+            XCTFail("Packet was not decoded")
+            return
+        }
 
         XCTAssert(packet is MNPLinkRequestPacket)
     }
@@ -71,19 +72,20 @@ class newchTests: XCTestCase {
             0x00, 0x00, 0x00, 0x10, 0x03, 0xf6, 0xc9
         ])
 
-        let packetDecoded = expectation(description: "packet is decoded")
-        var packet: MNPPacket?
+        var readPacket: MNPPacket?
 
         try layer.read(data: data) {
-            guard packet == nil else {
+            guard readPacket == nil else {
                 XCTFail("More than one packet was decoded")
                 return
             }
-            packet = $0
-            packetDecoded.fulfill()
+            readPacket = $0
         }
 
-        wait(for: [packetDecoded], timeout: 0)
+        guard let packet = readPacket else {
+            XCTFail("Packet was not decoded")
+            return
+        }
 
         XCTAssert(packet is MNPLinkTransferPacket)
     }
@@ -155,7 +157,7 @@ class newchTests: XCTestCase {
         ]), 0xC9F6)
     }
 
-    func testDockPacket1() throws {
+    func testDockLayerReadRequestToDockPacket() throws {
 
         let initialData = Data(bytes: [
             0x6e, 0x65, 0x77, 0x74,
@@ -165,29 +167,123 @@ class newchTests: XCTestCase {
             0x00, 0x00, 0x00, 0x09
         ])
 
-        let decoded = try DockPacket(data: initialData)
-        let expected = DockPacket(command: .requestToDock,
-                                  data: Data(bytes: [0x00, 0x00, 0x00, 0x09]))
-        XCTAssertEqual(decoded, expected)
-        XCTAssertEqual(expected.encode(), initialData)
+        let layer = DockPacketLayer()
+
+        var readPacket: DockPacket?
+
+        try layer.read(data: initialData) {
+            guard readPacket == nil else {
+                XCTFail("More than one packet was decoded")
+                return
+            }
+            readPacket = $0
+        }
+
+        guard let packet = readPacket as? RequestToDockPacket else {
+            XCTFail("Packet was not decoded")
+            return
+        }
+
+        XCTAssertEqual(packet,
+                       RequestToDockPacket(protocolVersion: 9))
+        XCTAssertEqual(try layer.write(packet: packet), initialData)
     }
 
-    func testDockPacket2() throws {
+    func testDockLayerReadResultPacket() throws {
 
         let initialData = Data(bytes: [
             0x6e, 0x65, 0x77, 0x74,
             0x64, 0x6f, 0x63, 0x6b,
             0x64, 0x72, 0x65, 0x73,
             0x00, 0x00, 0x00, 0x04,
-            0xff, 0xff, 0xc1, 0x7b
+            0x00, 0x00, 0x00, 0x00
         ])
 
-        let decoded = try DockPacket(data: initialData)
-        let expected = DockPacket(command: .result,
-                                  data: Data(bytes: [0xff, 0xff, 0xc1, 0x7b]))
-        XCTAssertEqual(decoded, expected)
-        XCTAssertEqual(expected.encode(), initialData)
+        let layer = DockPacketLayer()
+
+        var readPacket: DockPacket?
+
+        try layer.read(data: initialData) {
+            guard readPacket == nil else {
+                XCTFail("More than one packet was decoded")
+                return
+            }
+            readPacket = $0
+        }
+
+        guard let packet = readPacket as? ResultPacket else {
+            XCTFail("Packet was not decoded")
+            return
+        }
+
+        XCTAssertEqual(packet,
+                       ResultPacket(errorCode: 0))
+        XCTAssertEqual(try layer.write(packet: packet), initialData)
     }
+
+    func testDockLayerReadPartial() throws {
+
+        let parts = [
+            Data(bytes: [0x6e, 0x65]),
+            Data(bytes: [0x77, 0x74]),
+            Data(bytes: [0x64, 0x6f, 0x63]),
+            Data(bytes: [0x6b, 0x64, 0x72, 0x65, 0x73, 0x00, 0x00, 0x00]),
+            Data(bytes: [0x04, 0x00, 0x00]),
+            Data(bytes: [0x00, 0x00, 0x6e, 0x65, 0x77]),
+            Data(bytes: [0x74, 0x64, 0x6f, 0x63, 0x6b, 0x64, 0x72]),
+            Data(bytes: [0x65, 0x73, 0x00, 0x00, 0x00, 0x04, 0x00]),
+            Data(bytes: [0x00, 0x00, 0x01])
+        ]
+
+        let layer = DockPacketLayer()
+
+        for part in parts[0..<5] {
+            try layer.read(data: part) { _ in
+                XCTFail("Packet was decoded")
+            }
+        }
+
+        var readPacket1: DockPacket?
+
+        for part in parts[5..<8] {
+            try layer.read(data: part) {
+                guard readPacket1 == nil else {
+                    XCTFail("More than one packet was decoded")
+                    return
+                }
+                readPacket1 = $0
+            }
+        }
+
+        guard let packet1 = readPacket1 as? ResultPacket else {
+            XCTFail("Packet was not decoded")
+            return
+        }
+
+        XCTAssertEqual(packet1,
+                       ResultPacket(errorCode: 0))
+
+
+        var readPacket2: DockPacket?
+
+        try layer.read(data: parts.last!) {
+            guard readPacket2 == nil else {
+                XCTFail("More than one packet was decoded")
+                return
+            }
+            readPacket2 = $0
+        }
+
+        guard let packet2 = readPacket2 as? ResultPacket else {
+            XCTFail("Packet was not decoded")
+            return
+        }
+
+        XCTAssertEqual(packet2,
+                       ResultPacket(errorCode: 1))
+    }
+
+
 
     static var allTests : [(String, (newchTests) -> () throws -> Void)] {
         return [
@@ -196,8 +292,9 @@ class newchTests: XCTestCase {
             ("testPacketLayerWrite", testPacketLayerWrite),
             ("testLinkRequestPacket", testLinkRequestPacket),
             ("testCRC", testCRC),
-            ("testDockPacket1", testDockPacket1),
-            ("testDockPacket2", testDockPacket2),
+            ("testDockLayerReadRequestToDockPacket", testDockLayerReadRequestToDockPacket),
+            ("testDockLayerReadResultPacket", testDockLayerReadResultPacket),
+            ("testDockLayerReadPartial", testDockLayerReadPartial)
         ]
     }
 }

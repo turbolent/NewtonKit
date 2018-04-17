@@ -2,8 +2,8 @@ import Foundation
 
 extension FixedWidthInteger {
 
-    init?(littleEndianData data: Data) {
-        guard data.count == MemoryLayout<Self>.size else {
+    public init?(littleEndianData data: Data) {
+        guard data.count >= MemoryLayout<Self>.size else {
             return nil
         }
 
@@ -12,8 +12,8 @@ extension FixedWidthInteger {
         }
     }
 
-    init?(bigEndianData data: Data) {
-        guard data.count == MemoryLayout<Self>.size else {
+    public init?(bigEndianData data: Data) {
+        guard data.count >= MemoryLayout<Self>.size else {
             return nil
         }
 
@@ -22,14 +22,14 @@ extension FixedWidthInteger {
         }
     }
 
-    var littleEndianData: Data {
+    public var littleEndianData: Data {
         var littleEndian = self.littleEndian
         return withUnsafeBytes(of: &littleEndian) {
             Data($0)
         }
     }
 
-    var bigEndianData: Data {
+    public var bigEndianData: Data {
         var bigEndian = self.bigEndian
         return withUnsafeBytes(of: &bigEndian) {
             Data($0)
