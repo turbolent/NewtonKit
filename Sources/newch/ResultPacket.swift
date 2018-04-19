@@ -2,7 +2,7 @@
 import Foundation
 
 
-public struct ResultPacket: DecodableDockPacket, Equatable {
+public struct ResultPacket: CodableDockPacket, Equatable {
 
     public static let command: DockCommand = .result
 
@@ -10,15 +10,15 @@ public struct ResultPacket: DecodableDockPacket, Equatable {
         case invalidErrorCode
     }
 
-    public let errorCode: UInt32
+    public let errorCode: Int32
 
-    public init(errorCode: UInt32) {
+    public init(errorCode: Int32) {
         self.errorCode = errorCode
     }
 
     public init(data: Data) throws {
 
-        guard let errorCode = UInt32(bigEndianData: data) else {
+        guard let errorCode = Int32(bigEndianData: data) else {
             throw DecodingError.invalidErrorCode
         }
 

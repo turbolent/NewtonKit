@@ -2,7 +2,7 @@
 import Foundation
 
 
-public struct InitiateDockingPacket: DockPacket, Equatable {
+public struct InitiateDockingPacket: EncodableDockPacket, Equatable {
 
     public static let command: DockCommand = .initiateDocking
 
@@ -11,20 +11,9 @@ public struct InitiateDockingPacket: DockPacket, Equatable {
         case invalidSessionType
     }
 
-    public enum SessionType: UInt32 {
-        case noSession
-        case settingUpSession
-        case synchronizeSession
-        case restoreSession
-        case loadPackageSession
-        case testCommSession
-        case loadPatchSession
-        case updatingStoresSession
-    }
+    public let sessionType: DockSessionType
 
-    public let sessionType: SessionType
-
-    public init(sessionType: SessionType) {
+    public init(sessionType: DockSessionType) {
         self.sessionType = sessionType
     }
 

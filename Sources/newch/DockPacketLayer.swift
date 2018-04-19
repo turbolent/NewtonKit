@@ -41,7 +41,9 @@ public class DockPacketLayer {
     private static let allDockPacketTypes: [DecodableDockPacket.Type] = [
         RequestToDockPacket.self,
         NewtonNamePacket.self,
-        ResultPacket.self
+        NewtonInfoPacket.self,
+        ResultPacket.self,
+        PasswordPacket.self
     ]
 
     public init() {}
@@ -113,7 +115,7 @@ public class DockPacketLayer {
         return try commands[command]?.init(data: data)
     }
 
-    public func write(packet: DockPacket) throws -> Data {
+    public func write(packet: EncodableDockPacket) throws -> Data {
         var result = Data()
         result.append(DockPacketLayer.header)
         result.append(type(of: packet).command.rawValue.data(using: .ascii)!)

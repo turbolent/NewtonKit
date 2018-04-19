@@ -2,12 +2,17 @@
 import Foundation
 
 
-public protocol DockPacket {
+public protocol EncodableDockPacket {
     static var command: DockCommand { get }
+
     func encode() -> Data?
 }
 
 
-public protocol DecodableDockPacket: DockPacket {
+public protocol DecodableDockPacket {
+    static var command: DockCommand { get }
+
     init(data: Data) throws
 }
+
+public protocol CodableDockPacket: EncodableDockPacket, DecodableDockPacket {}
