@@ -283,7 +283,31 @@ class newchTests: XCTestCase {
                        ResultPacket(errorCode: 1))
     }
 
-
+    func testDES() throws {
+        let cipher = try DES(keyBytes: [0xe4, 0x0f, 0x7e, 0x9f, 0x0a, 0x36, 0x2c, 0xfa])
+        XCTAssertEqual(cipher.subkeys, [
+            1941816532332429047,
+            3187698850721185784,
+            14629649794741350207,
+            2552379178741254125,
+            10907857884915252627,
+            925659938082994879,
+            5698161420098400218,
+            8738098074673864543,
+            11752688268146924526,
+            15095317179288608183,
+            8487308217601440611,
+            12601211940932366813,
+            9731146212525264767,
+            1318866358298834551,
+            2127386486980629434,
+            13864349024495151355
+        ])
+        let unencrypted = Data(bytes: [0xff, 0x8d, 0xaa, 0xb8, 0x00, 0x20, 0x41, 0xd5])
+        let encrypted = cipher.encrypt(source: unencrypted)
+        let expected = Data(bytes: [0xf6, 0xeb, 0xa1, 0x37, 0xf3, 0x69, 0x9e, 0xa5])
+        XCTAssertEqual(encrypted, expected)
+    }
 
     static var allTests : [(String, (newchTests) -> () throws -> Void)] {
         return [
