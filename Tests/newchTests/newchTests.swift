@@ -169,7 +169,7 @@ class newchTests: XCTestCase {
 
         let layer = DockPacketLayer()
 
-        var readPacket: DockPacket?
+        var readPacket: DecodableDockPacket?
 
         try layer.read(data: initialData) {
             guard readPacket == nil else {
@@ -201,7 +201,7 @@ class newchTests: XCTestCase {
 
         let layer = DockPacketLayer()
 
-        var readPacket: DockPacket?
+        var readPacket: DecodableDockPacket?
 
         try layer.read(data: initialData) {
             guard readPacket == nil else {
@@ -223,7 +223,7 @@ class newchTests: XCTestCase {
 
     func testDockLayerReadPartial() throws {
 
-        let parts = [
+        let parts: [Data] = [
             Data(bytes: [0x6e, 0x65]),
             Data(bytes: [0x77, 0x74]),
             Data(bytes: [0x64, 0x6f, 0x63]),
@@ -243,7 +243,7 @@ class newchTests: XCTestCase {
             }
         }
 
-        var readPacket1: DockPacket?
+        var readPacket1: DecodableDockPacket?
 
         for part in parts[5..<8] {
             try layer.read(data: part) {
@@ -264,7 +264,7 @@ class newchTests: XCTestCase {
                        ResultPacket(errorCode: 0))
 
 
-        var readPacket2: DockPacket?
+        var readPacket2: DecodableDockPacket?
 
         try layer.read(data: parts.last!) {
             guard readPacket2 == nil else {
