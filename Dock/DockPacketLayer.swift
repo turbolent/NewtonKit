@@ -113,6 +113,8 @@ public class DockPacketLayer {
             // decode
             if let dockPacket = try DockPacketLayer.decode(command: command, data: packetData) {
                 try onRead?(dockPacket)
+            } else {
+                debugPrint("!!! unknown command: \(command)")
             }
 
             // keep remaining data for next packet
