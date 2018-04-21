@@ -45,7 +45,9 @@ public class DockPacketLayer {
         ResultPacket.self,
         PasswordPacket.self,
         OperationCanceledPacket.self,
-        OperationCanceledAcknowledgementPacket.self
+        OperationCanceledAcknowledgementPacket.self,
+        HelloPacket.self,
+        DisconnectPacket.self
     ]
 
     public init() {}
