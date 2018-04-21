@@ -7,7 +7,6 @@ public class MNPConnectionLayer {
 
     public enum Error: Swift.Error {
         case closed
-        case stateVariablesUninitialized
         case invalidEstablishmentPhaseReceiveSequenceNumber
         case invalidLinkTransferDataCount
         case noSendCredit
@@ -63,72 +62,67 @@ public class MNPConnectionLayer {
     private var maxOutstandingLTFrameCount: UInt8 = 0
 
 
-    private struct StateVariables {
+    // State variables
 
-        // A.6.3.1 Modulus
-        //
-        // [...] The modulus is 256 [...]
+    // A.6.3.1 Modulus
+    //
+    // [...] The modulus is 256 [...]
 
-        // A.6.3.2 Send state variable V(S)
-        //
-        // The send state variable V(S) denotes the sequence number of the next
-        // in-sequence LT frame to be transmitted. V(S) can take on the values 0
-        // through modulus minus 1. [...]
+    // A.6.3.2 Send state variable V(S)
+    //
+    // The send state variable V(S) denotes the sequence number of the next
+    // in-sequence LT frame to be transmitted. V(S) can take on the values 0
+    // through modulus minus 1. [...]
 
-        var send: UInt8
+    private var sendState: UInt8 = 0
 
-        mutating func incrementSend() {
-            send = send &+ 1
-        }
-
-        // A.6.3.4 Receive state variable V(R)
-        //
-        // The receive state variable V(R) denotes the sequence number of the next
-        // in-sequence LT frame expected to be received. V(R) can take on the
-        // values 0 through modulus minus 1. [...]
-
-        var receive: UInt8
-
-        mutating func incrementReceive() {
-            receive = receive &+ 1
-        }
-
-
-        // A.6.3.10 Receive credit state variable R(k)
-        //
-        // The receive credit state variable R(k) denotes the number of LT frames
-        // the receiver is able to receive. [...]
-
-        var receiveCredit: UInt8
-
-
-        // A.6.3.12 Send credit state variable S(k)
-        //
-        // The send credit state variable S(k) denotes the number of LT frames
-        // the sender is able to transmit without receiving additional credit
-        // from the receiver. [...]
-
-        var sendCredit: UInt8
-
-        mutating func decrementSendCredit() {
-            guard sendCredit > 0 else {
-                return
-            }
-            sendCredit -= 1
-        }
-
-
-        // number of outstanding LT frames /
-        // number of still unacknowledged LT frames in transit
-
-        var unacknowledgedTransferPacketCount: UInt8
+    private func incrementSendState() {
+        sendState = sendState &+ 1
     }
 
-    private var stateVariables: StateVariables? {
-        didSet {
-            print("State vars: \(stateVariables)")
-        }
+
+    // A.6.3.4 Receive state variable V(R)
+    //
+    // The receive state variable V(R) denotes the sequence number of the next
+    // in-sequence LT frame expected to be received. V(R) can take on the
+    // values 0 through modulus minus 1. [...]
+
+    private var receiveState: UInt8 = 0
+
+    private func incrementReceiveState() {
+        receiveState = receiveState &+ 1
     }
+
+
+    // A.6.3.10 Receive credit state variable R(k)
+    //
+    // The receive credit state variable R(k) denotes the number of LT frames
+    // the receiver is able to receive. [...]
+
+    private var receiveCredit: UInt8 = 0
+
+
+    // A.6.3.12 Send credit state variable S(k)
+    //
+    // The send credit state variable S(k) denotes the number of LT frames
+    // the sender is able to transmit without receiving additional credit
+    // from the receiver. [...]
+
+    private var sendCredit: UInt8 = 0
+
+    private func decrementSendCredit() {
+        guard sendCredit > 0 else {
+            return
+        }
+        sendCredit -= 1
+    }
+
+
+    // number of outstanding LT frames /
+    // number of still unacknowledged LT frames in transit
+
+    private var unacknowledgedTransferPacketCount: UInt8 = 0
+
 
     public init() {}
 
@@ -381,13 +375,13 @@ public class MNPConnectionLayer {
         //
         // Upon data phase initialization, V(S) is set to 1.
 
-        let send: UInt8 = 1
+        sendState = 1
 
         // A.6.3.4 Receive state variable V(R)
         //
         // Upon data phase initialization, V(R) is set to 1.
 
-        let receive: UInt8 = 1
+        receiveState = 1
 
         // A.6.3.10 Receive credit state variable R(k)
         //
@@ -395,20 +389,16 @@ public class MNPConnectionLayer {
         // When the error-correcting entity enters the data phase,
         // R(k) is set equal to k.
 
-        let receiveCredit = maxOutstandingLTFrameCount
+        receiveCredit = maxOutstandingLTFrameCount
 
         // A.6.3.12 Send credit state variable S(k)
         //
         // [...] k (the maximum number of outstanding LT frames). [...]
         // Upon data phase initialization, S(k) is set to k.
 
-        let sendCredit = maxOutstandingLTFrameCount
+        sendCredit = maxOutstandingLTFrameCount
 
-        stateVariables = StateVariables(send: send,
-                                        receive: receive,
-                                        receiveCredit: receiveCredit,
-                                        sendCredit: sendCredit,
-                                        unacknowledgedTransferPacketCount: 0)
+        unacknowledgedTransferPacketCount = 0
     }
 
     // Data phase
@@ -451,10 +441,6 @@ public class MNPConnectionLayer {
 
     private func handleDataPhase(linkTransfer: MNPLinkTransferPacket) throws {
 
-        guard stateVariables != nil else {
-            throw Error.stateVariablesUninitialized
-        }
-
         // A.7.3.2.2 Reception of out-of-sequence LT frames
         //
         // When an error-correcting entity receives a valid LT frame whose send
@@ -465,7 +451,7 @@ public class MNPConnectionLayer {
         // The first reception of an LT frame with N(S) = V(R) - 1, however, is ignored
         // and does not cause transmission of an LA frame.
 
-        guard linkTransfer.sendSequenceNumber == stateVariables?.receive else {
+        guard linkTransfer.sendSequenceNumber == receiveState else {
 
             // TODO: only send LA if necessary
             try sendLinkAcknowledgement()
@@ -478,12 +464,12 @@ public class MNPConnectionLayer {
         // the error-correcting entity shall discard the information field of the LT frame
         // and transmit an LA frame as described in A.7.3.3.
 
-        guard (stateVariables?.receiveCredit ?? 0) > 0 else {
+        guard receiveCredit > 0 else {
             try sendLinkAcknowledgement()
             return
         }
 
-        stateVariables?.incrementReceive()
+        incrementReceiveState()
 
         // TODO: start T402
 
@@ -508,16 +494,8 @@ public class MNPConnectionLayer {
 
     private func handleDataPhase(linkAcknowledgement: MNPLinkAcknowledgementPacket) throws {
 
-        guard stateVariables != nil else {
-            throw Error.stateVariablesUninitialized
-        }
-
-        let unacknowledgedTransferPacketCount =
-            (stateVariables?.send ?? 1)
-            - linkAcknowledgement.receiveSequenceNumber
-
-        stateVariables?.unacknowledgedTransferPacketCount =
-            unacknowledgedTransferPacketCount
+        unacknowledgedTransferPacketCount =
+            sendState - linkAcknowledgement.receiveSequenceNumber
 
         if unacknowledgedTransferPacketCount > 0 {
             // TODO: restart timer T401
@@ -526,7 +504,7 @@ public class MNPConnectionLayer {
         }
 
         // TODO: subtract unacknowledgedPacketCount
-        stateVariables?.sendCredit =
+        sendCredit =
             linkAcknowledgement.receiveCreditNumber - unacknowledgedTransferPacketCount
     }
 
@@ -544,10 +522,6 @@ public class MNPConnectionLayer {
 
     private func sendLinkAcknowledgement() throws {
 
-        guard let stateVariables = stateVariables else {
-            throw Error.stateVariablesUninitialized
-        }
-
         // A.6.3.5 Receive sequence number N(R)
         //
         // All LA frames contain N(R), the send sequence number of the last received LT frame.
@@ -557,7 +531,7 @@ public class MNPConnectionLayer {
         // N(R) indicates that the error-correcting entity transmitting the N(R) has received
         // correctly all LT frames numbered up to and including N(R).
 
-        let receiveSequenceNumber = stateVariables.receive - 1
+        let receiveSequenceNumber = receiveState - 1
 
         // A.6.3.11 Receive credit number N(k)
         //
@@ -566,7 +540,7 @@ public class MNPConnectionLayer {
         // N(k) indicates that the error-correcting entity transmitting the N(k) can properly receive
         // LT frames numbered up to and including N(R) + N(k).
 
-        let receiveCreditNumber = stateVariables.receiveCredit
+        let receiveCreditNumber = receiveCredit
 
         write(packet: MNPLinkAcknowledgementPacket(receiveSequenceNumber: receiveSequenceNumber,
                                                    receiveCreditNumber: receiveCreditNumber))
@@ -596,11 +570,7 @@ public class MNPConnectionLayer {
             throw Error.invalidLinkTransferDataCount
         }
 
-        guard stateVariables != nil else {
-            throw Error.stateVariablesUninitialized
-        }
-
-        guard (stateVariables?.sendCredit ?? 0) > 0 else {
+        guard sendCredit > 0 else {
             throw Error.noSendCredit
         }
 
@@ -619,13 +589,13 @@ public class MNPConnectionLayer {
         // but cannot exceed N(R) of the last received LA frame by more than the maximum number
         // of outstanding LT frames (k).
 
-        let sendSequenceNumber = stateVariables?.send ?? 0
+        let sendSequenceNumber = sendState
 
         write(packet: MNPLinkTransferPacket(sendSequenceNumber: sendSequenceNumber,
                                             information: data))
 
-        stateVariables?.incrementSend()
-        stateVariables?.decrementSendCredit()
+        incrementSendState()
+        decrementSendCredit()
 
         // TODO: start timer T401
     }
