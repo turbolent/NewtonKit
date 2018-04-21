@@ -50,6 +50,8 @@ public class DockPacketLayer {
         DisconnectPacket.self
     ]
 
+    public var onRead: ((DecodableDockPacket) throws -> Void)?
+
     public init() {}
 
     private static let commands =
@@ -57,7 +59,7 @@ public class DockPacketLayer {
 
     private var rawData = Data()
 
-    public func read(data additionalData: Data, handler: (DecodableDockPacket) -> Void) throws {
+    public func read(data additionalData: Data) throws {
 
         rawData.append(additionalData)
 
@@ -110,7 +112,7 @@ public class DockPacketLayer {
 
             // decode
             if let dockPacket = try DockPacketLayer.decode(command: command, data: packetData) {
-                handler(dockPacket)
+                try onRead?(dockPacket)
             }
 
             // keep remaining data for next packet

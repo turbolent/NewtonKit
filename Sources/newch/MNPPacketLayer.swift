@@ -13,6 +13,7 @@ public class MNPPacketLayer {
         case endCRC1
     }
 
+    public var onRead: ((MNPPacket) throws -> Void)?
     public var onStateChange: ((State, State) -> Void)?
 
     private var state: State = .outside(offset: 0) {
@@ -66,7 +67,7 @@ public class MNPPacketLayer {
         state = .outside(offset: 0)
     }
 
-    public func read(data: Data, handler: (MNPPacket) -> Void) throws {
+    public func read(data: Data) throws {
         for byte in data {
             switch state {
             case .outside(let offset):
@@ -111,7 +112,7 @@ public class MNPPacketLayer {
                 // handle incorrect CRC match in higher level
                 if rawPacket.crcMatches {
                     let packet = try rawPacket.decode()
-                    handler(packet)
+                    try onRead?(packet)
                 }
             }
         }

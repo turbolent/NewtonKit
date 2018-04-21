@@ -18,7 +18,7 @@ public class SerialPort {
     private var fd: Int32?
     private var source: DispatchSourceRead?
 
-    public var onData: ((Data) -> Void)?
+    public var onRead: ((Data) throws -> Void)?
     public var onCancel: (() -> Void)?
 
     public let path: String
@@ -92,7 +92,7 @@ public class SerialPort {
                 return
             }
 
-            onData?(data)
+            try onRead?(data)
         } catch {
             try? close()
         }

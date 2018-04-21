@@ -28,7 +28,7 @@ public class MNPConnectionLayer {
     }
 
     public var onWrite: ((MNPPacket) -> Void)?
-    public var onRead: ((Data) -> Void)?
+    public var onRead: ((Data) throws -> Void)?
     public var onClose: ((MNPLinkDisconnectPacket.Reason?) -> Void)?
 
     private var linkResponse: MNPLinkRequestPacket?
@@ -473,7 +473,7 @@ public class MNPConnectionLayer {
 
         // TODO: start T402
 
-        onRead?(linkTransfer.information)
+        try onRead?(linkTransfer.information)
 
         // NOTE: according to the spec we should be able to hold of acknowledging
         // every packet, but testing with a MP130/2.0 required it

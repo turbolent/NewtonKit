@@ -2,28 +2,54 @@ import Foundation
 import newch
 
 
-let packetLayer = MNPPacketLayer()
+guard CommandLine.arguments.count > 1 else {
+    fatalError("Missing path to serial port")
+}
+let path = CommandLine.arguments[1]
+let serialPort = try SerialPort(path: path)
 
 let group = DispatchGroup()
 group.enter()
 
-// let path = "/dev/ttyUSB0"
-let path = "/dev/cu.usbserial-AL02AUFM"
+let mnpPacketLayer = MNPPacketLayer()
+let mnpConnectionLayer = MNPConnectionLayer()
+let dockPacketLayer = DockPacketLayer()
+let dockConnectionLayer = try DockConnectionLayer()
 
-let serialPort = try SerialPort(path: path)
+// Configure read pipeline
 
-serialPort.onCancel = {
-    group.leave()
+serialPort.onRead = { data in
+    try mnpPacketLayer.read(data: data)
 }
 
-serialPort.onData = { data in
-    try? packetLayer.read(data: data) { packet in
-        if packet is MNPLinkRequestPacket {
-            let framed = packetLayer.write(data: packet.encode())
-            try? serialPort.write(data: framed)
-        }
-    }
+mnpPacketLayer.onRead = { packet in
+    try mnpConnectionLayer.read(packet: packet)
 }
+
+mnpConnectionLayer.onRead = { data in
+    try dockPacketLayer.read(data: data)
+}
+
+dockPacketLayer.onRead = { packet in
+    try dockConnectionLayer.read(packet: packet)
+}
+
+
+// Configure write pipeline
+
+dockConnectionLayer.onWrite = { packet in
+    let data = try dockPacketLayer.write(packet: packet)
+    try mnpConnectionLayer.write(data: data)
+}
+
+mnpConnectionLayer.onWrite = { packet in
+    let encoded = packet.encode()
+    let framed = mnpPacketLayer.write(data: encoded)
+    try? serialPort.write(data: framed)
+}
+
+
+// Start connection
 
 try serialPort.open()
 try serialPort.startReading()
@@ -33,4 +59,3 @@ defer {
 }
 
 group.wait()
-
