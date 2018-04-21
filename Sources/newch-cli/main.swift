@@ -1,6 +1,7 @@
 import Foundation
 import newch
 
+let debugMNP = true
 
 guard CommandLine.arguments.count > 1 else {
     fatalError("Missing path to serial port")
@@ -23,6 +24,18 @@ serialPort.onRead = { data in
 }
 
 mnpPacketLayer.onRead = { packet in
+
+    if debugMNP {
+        switch packet {
+        case let lt as MNPLinkTransferPacket:
+            print(">>> LT: \(lt.sendSequenceNumber)\n\(lt.information.hexDump)\n")
+        case let la as MNPLinkAcknowledgementPacket:
+            print(">>> LA: \(la.receiveSequenceNumber)\n")
+        default:
+            break
+        }
+    }
+
     try mnpConnectionLayer.read(packet: packet)
 }
 
@@ -43,6 +56,18 @@ dockConnectionLayer.onWrite = { packet in
 }
 
 mnpConnectionLayer.onWrite = { packet in
+
+    if debugMNP {
+        switch packet {
+        case let lt as MNPLinkTransferPacket:
+            print("<<< LT: \(lt.sendSequenceNumber)\n\(lt.information.hexDump)\n")
+        case let la as MNPLinkAcknowledgementPacket:
+            print("<<< LA: \(la.receiveSequenceNumber)\n")
+        default:
+            break
+        }
+    }
+
     let encoded = packet.encode()
     let framed = mnpPacketLayer.write(data: encoded)
     try? serialPort.write(data: framed)
