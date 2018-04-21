@@ -87,7 +87,10 @@ public class DockPacketLayer {
             let lengthStartIndex = commandEndIndex
             let lengthEndIndex = lengthStartIndex.advanced(by: DockPacketLayer.boundary)
             let lengthData = rawData.subdata(in: lengthStartIndex..<lengthEndIndex)
-            guard let length = UInt32(bigEndianData: lengthData).map({ Int($0) }) else {
+            guard
+                let length = UInt32(bigEndianData: lengthData)
+                    .map({ Int(DockPacketLayer.roundToBoundary(length: $0)) })
+            else {
                 throw DecodingError.invalidLength
             }
 
@@ -115,18 +118,25 @@ public class DockPacketLayer {
         return try commands[command]?.init(data: data)
     }
 
+    private static func roundToBoundary(length: UInt32) -> UInt32 {
+        let boundary = UInt32(DockPacketLayer.boundary)
+        let remainder = length % boundary
+        let padding = boundary - remainder
+        return length + (remainder != 0 ? padding : 0)
+    }
+
     public func write(packet: EncodableDockPacket) throws -> Data {
         var result = Data()
         result.append(DockPacketLayer.header)
         result.append(type(of: packet).command.rawValue.data(using: .ascii)!)
 
         if let data = packet.encode() {
-            let boundaryRemainder = data.count % DockPacketLayer.boundary
-            let padding = DockPacketLayer.boundary - boundaryRemainder
-            let length = data.count + (boundaryRemainder != 0 ? padding : 0)
-            result.append(UInt32(length).bigEndianData)
+            let length = UInt32(data.count)
+            let roundedLength = DockPacketLayer.roundToBoundary(length: length)
+            result.append(UInt32(roundedLength).bigEndianData)
             result.append(data)
-            if boundaryRemainder != 0 {
+            let padding = Int(roundedLength - length)
+            if padding != 0 {
                 result.append(Data(repeating: 0, count: padding))
             }
         }
