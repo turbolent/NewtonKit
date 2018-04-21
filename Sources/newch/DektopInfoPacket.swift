@@ -22,12 +22,15 @@ public struct DesktopInfoPacket: EncodableDockPacket {
     public let encryptedKey: Data
     public let sessionType: DockSessionType
     public let allowSelectiveSync: Bool
+    // TODO: NSOF
+    public let desktopApps: Data
 
     public init(protocolVersion: UInt32,
                 desktopType: DesktopType,
                 encryptedKey: Data,
                 sessionType: DockSessionType,
-                allowSelectiveSync: Bool) throws {
+                allowSelectiveSync: Bool,
+                desktopApps: Data) throws {
 
         guard encryptedKey.count == DesktopInfoPacket.keySize else {
             throw InitializationError.invalidKeySize
@@ -38,6 +41,7 @@ public struct DesktopInfoPacket: EncodableDockPacket {
         self.encryptedKey = encryptedKey
         self.sessionType = sessionType
         self.allowSelectiveSync = allowSelectiveSync
+        self.desktopApps = desktopApps
     }
 
     public func encode() -> Data? {
@@ -46,7 +50,8 @@ public struct DesktopInfoPacket: EncodableDockPacket {
         data.append(desktopType.rawValue.bigEndianData)
         data.append(encryptedKey)
         data.append(sessionType.rawValue.bigEndianData)
-        data.append(UInt32(allowSelectiveSync ? 0 : 1).bigEndianData)
+        data.append(UInt32(allowSelectiveSync ? 1 : 0).bigEndianData)
+        data.append(desktopApps)
         return data
     }
 }
