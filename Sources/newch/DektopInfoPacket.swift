@@ -6,6 +6,12 @@ public struct DesktopInfoPacket: EncodableDockPacket {
 
     public static let command: DockCommand = .desktopInfo
 
+    public enum InitializationError: Error {
+        case invalidKeySize
+    }
+
+    public static let keySize = 8
+
     public enum DesktopType: UInt32 {
         case macintosh
         case windows
@@ -13,22 +19,23 @@ public struct DesktopInfoPacket: EncodableDockPacket {
 
     public let protocolVersion: UInt32
     public let desktopType: DesktopType
-    public let encryptedKey1: UInt32
-    public let encryptedKey2: UInt32
+    public let encryptedKey: Data
     public let sessionType: DockSessionType
     public let allowSelectiveSync: Bool
 
     public init(protocolVersion: UInt32,
                 desktopType: DesktopType,
-                encryptedKey1: UInt32,
-                encryptedKey2: UInt32,
+                encryptedKey: Data,
                 sessionType: DockSessionType,
-                allowSelectiveSync: Bool) {
+                allowSelectiveSync: Bool) throws {
+
+        guard encryptedKey.count == DesktopInfoPacket.keySize else {
+            throw InitializationError.invalidKeySize
+        }
 
         self.protocolVersion = protocolVersion
         self.desktopType = desktopType
-        self.encryptedKey1 = encryptedKey1
-        self.encryptedKey2 = encryptedKey2
+        self.encryptedKey = encryptedKey
         self.sessionType = sessionType
         self.allowSelectiveSync = allowSelectiveSync
     }
@@ -37,8 +44,7 @@ public struct DesktopInfoPacket: EncodableDockPacket {
         var data = Data()
         data.append(protocolVersion.bigEndianData)
         data.append(desktopType.rawValue.bigEndianData)
-        data.append(encryptedKey1.bigEndianData)
-        data.append(encryptedKey2.bigEndianData)
+        data.append(encryptedKey)
         data.append(sessionType.rawValue.bigEndianData)
         data.append(UInt32(allowSelectiveSync ? 0 : 1).bigEndianData)
         return data
