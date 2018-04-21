@@ -43,7 +43,9 @@ public class DockPacketLayer {
         NewtonNamePacket.self,
         NewtonInfoPacket.self,
         ResultPacket.self,
-        PasswordPacket.self
+        PasswordPacket.self,
+        OperationCanceledPacket.self,
+        OperationCanceledAcknowledgementPacket.self
     ]
 
     public init() {}

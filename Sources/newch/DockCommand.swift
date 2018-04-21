@@ -141,7 +141,7 @@ public enum DockCommand: String {
     // Desktop <- -> Newton
     case operationDone = "opdn"
     case operationCanceled = "opca"  // spec says 'opcn'!
-    case opCanceledAck = "ocaa"
+    case operationCanceledAcknowledgement = "ocaa"
 
     // Sync and Selective Sync
     // Newton -> Desktop
