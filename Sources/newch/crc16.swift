@@ -34,8 +34,10 @@ private let table: [UInt16] = [
 ]
 
 func crc16(input: UInt8, crc: UInt16) -> UInt16 {
-    let index = Int((crc & 0xff) ^ UInt16(input))
-    return (crc >> 8) ^ table[index]
+    let index = Int(UInt16(crc & 0xff) ^ UInt16(input))
+    let t1 = UInt16(crc >> 8)
+    let t2: UInt16 = table[index]
+    return t1 ^ t2
 }
 
 func crc16(input: [UInt8]) -> UInt16 {

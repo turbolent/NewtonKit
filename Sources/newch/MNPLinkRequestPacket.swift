@@ -125,36 +125,36 @@ public struct MNPLinkRequestPacket: MNPPacket {
         }
 
         // decode and check framing mode
-        let framingModeOffset = 11
-        let framingModeCode = data[data.startIndex.advanced(by: framingModeOffset)]
+        let framingModeOffset: Int = 11
+        let framingModeCode: UInt8 = data[data.startIndex.advanced(by: framingModeOffset)]
         guard let framingMode = FramingMode(rawValue: framingModeCode) else {
             throw DecodingError.invalidFramingMode
         }
 
         // decode maximum number outstanding LT frames
-        let maxOutstandingLTFrameCountOffset = 14
-        let maxOutstandingLTFrameCount =
+        let maxOutstandingLTFrameCountOffset: Int = 14
+        let maxOutstandingLTFrameCount: UInt8 =
             data[data.startIndex.advanced(by: maxOutstandingLTFrameCountOffset)]
 
         // decode maximum information length
-        let maxInfoLengthOffset = 17
-        let maxInfoLengthStart =
+        let maxInfoLengthOffset: Int = 17
+        let maxInfoLengthStart: Int =
             data.startIndex.advanced(by: maxInfoLengthOffset)
-        let maxInfoLengthEnd =
+        let maxInfoLengthEnd: Int =
             maxInfoLengthStart.advanced(by: 2)
-        let maxInfoLengthData =
+        let maxInfoLengthData: Data =
             data.subdata(in: maxInfoLengthStart..<maxInfoLengthEnd)
         guard let maxInfoLength = UInt16(littleEndianData: maxInfoLengthData) else {
             throw DecodingError.invalidMaxInfoLength
         }
 
         // decode data phase optimization
-        let dataPhaseOptimizationOffset = 21
-        let dataPhaseOptimization =
+        let dataPhaseOptimizationOffset: Int = 21
+        let dataPhaseOptimization: UInt8 =
             data[data.startIndex.advanced(by: dataPhaseOptimizationOffset)]
-        let maxInfoLength256 =
+        let maxInfoLength256: Bool =
             dataPhaseOptimization & 0b00000001 == 0b01
-        let fixedFieldLTAndLAFrames =
+        let fixedFieldLTAndLAFrames: Bool =
             dataPhaseOptimization & 0b00000010 == 0b10
 
         let validationErrors = MNPLinkRequestPacket.validate(data: data)
