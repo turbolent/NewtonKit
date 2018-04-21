@@ -138,13 +138,16 @@ public class DockPacketLayer {
 
         if let data = packet.encode() {
             let length = UInt32(data.count)
+            result.append(UInt32(length).bigEndianData)
+
             let roundedLength = DockPacketLayer.roundToBoundary(length: length)
-            result.append(UInt32(roundedLength).bigEndianData)
             result.append(data)
             let padding = Int(roundedLength - length)
             if padding != 0 {
                 result.append(Data(repeating: 0, count: padding))
             }
+        } else {
+            result.append(UInt32(0).bigEndianData)
         }
 
         return result
