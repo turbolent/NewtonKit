@@ -2,9 +2,9 @@
 import Foundation
 
 
-public struct StartKeyboardPassthroughPacket: CodableDockPacket {
+public struct OperationDonePacket: CodableDockPacket {
 
-    public static let command: DockCommand = .startKeyboardPassthrough
+    public static let command: DockCommand = .operationDone
 
     public init() {}
 

@@ -81,9 +81,13 @@ let commandPrompt = CommandPrompt(dockConnectionLayer: dockConnectionLayer)
 dockConnectionLayer.onStateChange = { _, state in
     switch state {
     case .connected:
-        print("Connected")
-        DispatchQueue.global(qos: .userInteractive).async {
-            try? commandPrompt.start()
+        if commandPrompt.started {
+            commandPrompt.handleDockConnectionState(state: state)
+        } else {
+            print("Connected")
+            DispatchQueue.global(qos: .userInteractive).async {
+                try? commandPrompt.start()
+            }
         }
     case .disconnected:
         exit(0)

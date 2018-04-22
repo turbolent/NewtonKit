@@ -16,6 +16,9 @@ class CommandPrompt {
         case keyboard
     }
 
+
+    private(set) var started = false
+
     private var state: State = .idle
 
     private let dockConnectionLayer: DockConnectionLayer
@@ -51,10 +54,20 @@ class CommandPrompt {
 
     func handleDockConnectionState(state: DockConnectionLayer.State) {
         switch self.state {
+        case .idle:
+            if state == .keyboardPassthrough {
+                print("keyboard passthrough active\n")
+                self.state = .keyboardPassthrough
+            }
         case .initiatingKeyboardPassthrough:
             if state == .keyboardPassthrough {
                 print("keyboard passthrough active\n")
                 self.state = .keyboardPassthrough
+            }
+        case .keyboardPassthrough:
+            if state == .connected {
+                print("stopped keyboard passthrough\n")
+                self.state = .idle
             }
         default:
             break
@@ -62,6 +75,7 @@ class CommandPrompt {
     }
 
     func start() throws {
+        started = true
         while let line = prompt() {
             guard !line.isEmpty else {
                 continue
@@ -76,7 +90,11 @@ class CommandPrompt {
                     }
                 }
             case .keyboardPassthrough:
-                try sendKeyboardString(line)
+                if line == ".stop" {
+                    try dockConnectionLayer.stopKeyboardPassthrough()
+                } else {
+                    try sendKeyboardString(line)
+                }
             default:
                 continue
             }

@@ -65,10 +65,17 @@ public class DockConnectionLayer {
 
     public func read(packet: DecodableDockPacket) throws {
 
-        if packet is DisconnectPacket {
+
+        switch packet {
+        case is HelloPacket:
+            try write(packet: HelloPacket())
+            return
+        case is DisconnectPacket:
             state = .disconnected
             onDisconnect?()
             return
+        default:
+            break
         }
 
         switch state {
@@ -114,12 +121,13 @@ public class DockConnectionLayer {
                 try write(packet: PasswordPacket(encryptedKey: encryptedKey))
                 state = .connected
             }
-        case .connected, .keyboardPassthrough:
+        case .connected:
             switch packet {
             case is OperationCanceledPacket:
-                state = .connected
                 try write(packet: OperationCanceledAcknowledgementPacket())
+                state = .connected
             case is StartKeyboardPassthroughPacket:
+                try write(packet: StartKeyboardPassthroughPacket())
                 state = .keyboardPassthrough
             default:
                 break
@@ -128,6 +136,8 @@ public class DockConnectionLayer {
             if packet is StartKeyboardPassthroughPacket {
                 state = .keyboardPassthrough
             }
+        case .keyboardPassthrough:
+            break
         case .disconnected:
             break
         }
@@ -137,12 +147,16 @@ public class DockConnectionLayer {
         try onWrite?(packet)
     }
 
+    public func startDesktopControl() throws {
+        try write(packet: DesktopInControlPacket())
+    }
+
     public func startKeyboardPassthrough() throws {
         guard state == .connected else {
             throw Error.notConnected
         }
 
-        try write(packet: DesktopInControlPacket())
+        try startDesktopControl()
         try write(packet: StartKeyboardPassthroughPacket())
         state = .sentKeyboardPassthrough
     }
@@ -152,7 +166,7 @@ public class DockConnectionLayer {
             throw Error.notInKeyboardPassthrough
         }
 
-        try? write(packet: KeyboardCharPacket(character: character, state: 1))
+        try write(packet: KeyboardCharPacket(character: character, state: 1))
     }
 
     public func sendKeyboardString(_ string: String) throws {
@@ -160,6 +174,23 @@ public class DockConnectionLayer {
             throw Error.notInKeyboardPassthrough
         }
 
-        try? write(packet: KeyboardStringPacket(string: string))
+        try write(packet: KeyboardStringPacket(string: string))
+    }
+
+    public func stopKeyboardPassthrough() throws {
+        if state == .connected {
+            return
+        }
+
+        guard .keyboardPassthrough == state else {
+            throw Error.notInKeyboardPassthrough
+        }
+
+        try stopDesktopControl()
+        state = .connected
+    }
+
+    public func stopDesktopControl() throws {
+        try write(packet: OperationDonePacket())
     }
 }
