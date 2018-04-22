@@ -1,11 +1,12 @@
 import Foundation
 import newch
 
-let debugMNP = true
+let debugMNP = false
 
 guard CommandLine.arguments.count > 1 else {
     fatalError("Missing path to serial port")
 }
+
 let path = CommandLine.arguments[1]
 let serialPort = try SerialPort(path: path)
 
@@ -74,6 +75,24 @@ mnpConnectionLayer.onWrite = { packet in
 }
 
 
+// Command prompt
+
+let commandPrompt = CommandPrompt(dockConnectionLayer: dockConnectionLayer)
+dockConnectionLayer.onStateChange = { _, state in
+    switch state {
+    case .connected:
+        print("Connected")
+        DispatchQueue.global(qos: .userInteractive).async {
+            try? commandPrompt.start()
+        }
+    case .disconnected:
+        exit(0)
+    default:
+        commandPrompt.handleDockConnectionState(state: state)
+    }
+}
+
+
 // Start connection
 
 try serialPort.open()
@@ -83,4 +102,8 @@ defer {
     try? serialPort.close()
 }
 
+print("Connecting ...")
+
 group.wait()
+
+

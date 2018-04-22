@@ -21,7 +21,7 @@ public class MNPConnectionLayer {
 
     public var onStateChange: ((State, State) -> Void)?
 
-    private var state: State = .idle {
+    public private(set) var state: State = .idle {
         didSet {
             onStateChange?(oldValue, state)
         }

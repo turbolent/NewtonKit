@@ -16,7 +16,7 @@ public class MNPPacketLayer {
     public var onRead: ((MNPPacket) throws -> Void)?
     public var onStateChange: ((State, State) -> Void)?
 
-    private var state: State = .outside(offset: 0) {
+    public private(set) var state: State = .outside(offset: 0) {
         didSet {
             onStateChange?(oldValue, state)
         }

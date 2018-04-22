@@ -4,7 +4,7 @@ import Foundation
 
 public struct DesktopInControlPacket: EncodableDockPacket {
 
-    public static let command: DockCommand = .des
+    public static let command: DockCommand = .desktopInControl
 
     public init() {}
 
