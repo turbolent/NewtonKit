@@ -35,13 +35,14 @@ class NewtonKitTests: XCTestCase {
 
         var readPacket: MNPPacket?
 
-        try layer.read(data: data) {
+        layer.onRead = {
             guard readPacket == nil else {
                 XCTFail("More than one packet was decoded")
                 return
             }
             readPacket = $0
         }
+        try layer.read(data: data)
 
         guard let packet = readPacket else {
             XCTFail("Packet was not decoded")
@@ -74,13 +75,14 @@ class NewtonKitTests: XCTestCase {
 
         var readPacket: MNPPacket?
 
-        try layer.read(data: data) {
+        layer.onRead = {
             guard readPacket == nil else {
                 XCTFail("More than one packet was decoded")
                 return
             }
             readPacket = $0
         }
+        try layer.read(data: data)
 
         guard let packet = readPacket else {
             XCTFail("Packet was not decoded")
@@ -171,13 +173,14 @@ class NewtonKitTests: XCTestCase {
 
         var readPacket: DecodableDockPacket?
 
-        try layer.read(data: initialData) {
+        layer.onRead = {
             guard readPacket == nil else {
                 XCTFail("More than one packet was decoded")
                 return
             }
             readPacket = $0
         }
+        try layer.read(data: initialData)
 
         guard let packet = readPacket as? RequestToDockPacket else {
             XCTFail("Packet was not decoded")
@@ -203,13 +206,14 @@ class NewtonKitTests: XCTestCase {
 
         var readPacket: DecodableDockPacket?
 
-        try layer.read(data: initialData) {
+        layer.onRead = {
             guard readPacket == nil else {
                 XCTFail("More than one packet was decoded")
                 return
             }
             readPacket = $0
         }
+        try layer.read(data: initialData)
 
         guard let packet = readPacket as? ResultPacket else {
             XCTFail("Packet was not decoded")
@@ -237,22 +241,24 @@ class NewtonKitTests: XCTestCase {
 
         let layer = DockPacketLayer()
 
+        layer.onRead = { _ in
+            XCTFail("Packet was decoded")
+        }
         for part in parts[0..<5] {
-            try layer.read(data: part) { _ in
-                XCTFail("Packet was decoded")
-            }
+            try layer.read(data: part)
         }
 
         var readPacket1: DecodableDockPacket?
 
-        for part in parts[5..<8] {
-            try layer.read(data: part) {
-                guard readPacket1 == nil else {
-                    XCTFail("More than one packet was decoded")
-                    return
-                }
-                readPacket1 = $0
+        layer.onRead = {
+            guard readPacket1 == nil else {
+                XCTFail("More than one packet was decoded")
+                return
             }
+            readPacket1 = $0
+        }
+        for part in parts[5..<8] {
+            try layer.read(data: part)
         }
 
         guard let packet1 = readPacket1 as? ResultPacket else {
@@ -266,13 +272,14 @@ class NewtonKitTests: XCTestCase {
 
         var readPacket2: DecodableDockPacket?
 
-        try layer.read(data: parts.last!) {
+        layer.onRead = {
             guard readPacket2 == nil else {
                 XCTFail("More than one packet was decoded")
                 return
             }
             readPacket2 = $0
         }
+        try layer.read(data: parts.last!)
 
         guard let packet2 = readPacket2 as? ResultPacket else {
             XCTFail("Packet was not decoded")
