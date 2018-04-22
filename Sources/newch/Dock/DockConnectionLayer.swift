@@ -66,16 +66,10 @@ public class DockConnectionLayer {
     public func read(packet: DecodableDockPacket) throws {
 
 
-        switch packet {
-        case is HelloPacket:
-            try write(packet: HelloPacket())
-            return
-        case is DisconnectPacket:
+        if packet is DisconnectPacket {
             state = .disconnected
             onDisconnect?()
             return
-        default:
-            break
         }
 
         switch state {
