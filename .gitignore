@@ -38,3 +38,5 @@ Packages/
 Package.pins
 Package.resolved
 .build/
+
+*.xcodeproj
