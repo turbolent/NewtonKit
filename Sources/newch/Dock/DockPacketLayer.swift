@@ -48,7 +48,12 @@ public class DockPacketLayer {
         OperationCanceledAcknowledgementPacket.self,
         HelloPacket.self,
         DisconnectPacket.self,
-        StartKeyboardPassthroughPacket.self
+        StartKeyboardPassthroughPacket.self,
+        InternalStorePacket.self,
+        RequestToSyncPacket.self,
+        SynchronizePacket.self,
+        SyncOptionsPacket.self,
+        CurrentTimePacket.self
     ]
 
     public var onRead: ((DecodableDockPacket) throws -> Void)?

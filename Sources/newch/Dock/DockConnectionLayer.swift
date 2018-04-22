@@ -12,6 +12,7 @@ public class DockConnectionLayer {
         case connected
         case sentKeyboardPassthrough
         case keyboardPassthrough
+        case initiatedSync
         case disconnected
     }
 
@@ -123,6 +124,9 @@ public class DockConnectionLayer {
             case is StartKeyboardPassthroughPacket:
                 try write(packet: StartKeyboardPassthroughPacket())
                 state = .keyboardPassthrough
+            case is RequestToSyncPacket:
+                try write(packet: GetSyncOptionsPacket())
+                state = .initiatedSync
             default:
                 break
             }
@@ -132,6 +136,20 @@ public class DockConnectionLayer {
             }
         case .keyboardPassthrough:
             break
+        case .initiatedSync:
+            switch packet {
+            case is SyncOptionsPacket:
+                // request the time the current store was last backed up
+                try write(packet: LastSyncTimePacket())
+            case is CurrentTimePacket:
+                // TODO:
+                break
+            case is OperationCanceledPacket:
+                try write(packet: OperationCanceledAcknowledgementPacket())
+                state = .connected
+            default:
+                break
+            }
         case .disconnected:
             break
         }
