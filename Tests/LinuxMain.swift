@@ -1,6 +1,6 @@
 import XCTest
-@testable import newchTests
+@testable import NewtonKitTests
 
 XCTMain([
-    testCase(newchTests.allTests),
+    testCase(NewtonKitTests.allTests),
 ])

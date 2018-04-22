@@ -2,14 +2,14 @@
 import PackageDescription
 
 let package = Package(
-    name: "newch",
+    name: "NewtonKit",
     products: [
-        .executable(name: "newch-cli", targets: ["newch-cli"]),
-        .library(name: "newch", targets: ["newch"]),
+        .executable(name: "newton", targets: ["newton"]),
+        .library(name: "NewtonKit", targets: ["NewtonKit"]),
     ],
     targets: [
-        .target(name: "newch"),
-        .target(name: "newch-cli", dependencies: ["newch"]),
-        .testTarget(name: "newchTests", dependencies: ["newch"])
+        .target(name: "NewtonKit"),
+        .target(name: "newton", dependencies: ["NewtonKit"]),
+        .testTarget(name: "NewtonKitTests", dependencies: ["NewtonKit"])
     ]
 )

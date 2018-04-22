@@ -1,5 +1,5 @@
 import Foundation
-import newch
+import NewtonKit
 
 let debugMNP = false
 

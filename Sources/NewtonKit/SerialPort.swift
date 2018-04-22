@@ -94,7 +94,7 @@ public class SerialPort {
 
             try onRead?(data)
         } catch {
-            try? close()
+//            try? close()
         }
     }
 

@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import newch
+@testable import NewtonKit
 
 extension Data {
     var debugDescription: String {
@@ -9,7 +9,7 @@ extension Data {
     }
 }
 
-class newchTests: XCTestCase {
+class NewtonKitTests: XCTestCase {
 
     func testPacketLayerReadRequest() throws {
 
@@ -309,7 +309,7 @@ class newchTests: XCTestCase {
         XCTAssertEqual(encrypted, expected)
     }
 
-    static var allTests : [(String, (newchTests) -> () throws -> Void)] {
+    static var allTests : [(String, (NewtonKitTests) -> () throws -> Void)] {
         return [
             ("testPacketLayerReadRequest", testPacketLayerReadRequest),
             ("testPacketLayerReadTransfer", testPacketLayerReadTransfer),
@@ -318,7 +318,8 @@ class newchTests: XCTestCase {
             ("testCRC", testCRC),
             ("testDockLayerReadRequestToDockPacket", testDockLayerReadRequestToDockPacket),
             ("testDockLayerReadResultPacket", testDockLayerReadResultPacket),
-            ("testDockLayerReadPartial", testDockLayerReadPartial)
+            ("testDockLayerReadPartial", testDockLayerReadPartial),
+            ("testDES", testDES)
         ]
     }
 }

@@ -66,6 +66,7 @@ public class DockConnectionLayer {
 
     public func read(packet: DecodableDockPacket) throws {
 
+        print("XXX \(packet)")
 
         if packet is DisconnectPacket {
             state = .disconnected

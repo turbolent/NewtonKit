@@ -1,7 +1,7 @@
 
 
 import Foundation
-import newch
+import NewtonKit
 
 
 class CommandPrompt {
