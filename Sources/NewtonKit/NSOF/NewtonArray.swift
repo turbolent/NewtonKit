@@ -51,3 +51,14 @@ public final class NewtonArray: NewtonObject {
         return data
     }
 }
+
+
+extension NewtonArray: CustomStringConvertible {
+
+    public var description: String {
+        let contents = values
+            .map { String(describing: $0) }
+            .joined(separator: ", ")
+        return "[ \(String(describing: `class`)): \(contents) ]"
+    }
+}

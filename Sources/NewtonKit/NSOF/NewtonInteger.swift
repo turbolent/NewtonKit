@@ -48,3 +48,11 @@ extension NewtonInteger: ExpressibleByIntegerLiteral {
         self.init(integer: integerLiteral)
     }
 }
+
+
+extension NewtonInteger: CustomStringConvertible {
+
+    public var description: String {
+        return String(describing: integer)
+    }
+}

@@ -40,3 +40,11 @@ public struct NewtonMagicPointer: NewtonObject {
         return data
     }
 }
+
+
+extension NewtonMagicPointer: CustomStringConvertible {
+
+    public var description: String {
+        return "*\(String(describing: pointer))"
+    }
+}

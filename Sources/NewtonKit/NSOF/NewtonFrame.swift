@@ -76,3 +76,19 @@ extension NewtonFrame: ExpressibleByDictionaryLiteral {
         self.init(slots: slots)
     }
 }
+
+
+extension NewtonFrame: CustomStringConvertible {
+
+    public var description: String {
+        let contents = slots
+            .map { slot in
+                let tagDescription = String(describing: slot.tag)
+                let valueDescription = String(describing: slot.value)
+                return [tagDescription, valueDescription]
+                    .joined(separator: ": ")
+            }
+            .joined(separator: ", ")
+        return "{ \(contents) }"
+    }
+}

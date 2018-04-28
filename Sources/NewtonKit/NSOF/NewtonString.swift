@@ -58,3 +58,11 @@ extension NewtonString: ExpressibleByStringLiteral {
         self.init(string: stringLiteral)
     }
 }
+
+
+extension NewtonString: CustomStringConvertible {
+
+    public var description: String {
+        return String(reflecting: string)
+    }
+}

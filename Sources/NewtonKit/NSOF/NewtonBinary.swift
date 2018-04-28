@@ -49,3 +49,12 @@ public final class NewtonBinary: NewtonObject {
         return data
     }
 }
+
+
+extension NewtonBinary: CustomStringConvertible {
+
+    public var description: String {
+        return "<\(String(describing: `class`)), length \(data.count)>"
+    }
+}
+

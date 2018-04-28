@@ -54,3 +54,15 @@ public final class NewtonSmallRect: NewtonObject {
         ])
     }
 }
+
+
+extension NewtonSmallRect: CustomStringConvertible {
+
+    public var description: String {
+        return "{"
+            + "top: \(String(describing: top)), "
+            + "left: \(String(describing: left)), "
+            + "bottom: \(String(describing: bottom)), "
+            + "right: \(String(describing: right))}"
+    }
+}

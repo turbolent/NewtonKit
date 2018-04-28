@@ -50,3 +50,14 @@ extension NewtonPlainArray: ExpressibleByArrayLiteral {
         self.init(values: elements)
     }
 }
+
+
+extension NewtonPlainArray: CustomStringConvertible {
+
+    public var description: String {
+        let contents = values
+            .map { String(describing: $0) }
+            .joined(separator: ", ")
+        return "[ \(contents) ]"
+    }
+}

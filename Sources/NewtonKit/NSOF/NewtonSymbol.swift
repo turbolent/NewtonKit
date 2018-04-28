@@ -44,3 +44,24 @@ public final class NewtonSymbol: NewtonObject {
         return data
     }
 }
+
+
+extension NewtonSymbol: ExpressibleByStringLiteral {
+
+    public convenience init(stringLiteral: String) {
+        self.init(name: stringLiteral)
+    }
+}
+
+
+extension NewtonSymbol: CustomStringConvertible {
+
+    public var description: String {
+
+        if name.unicodeScalars.first(where: { !CharacterSet.alphanumerics.contains($0) }) != nil {
+            return String(format: "|%@|", name)
+        }
+
+        return name
+    }
+}

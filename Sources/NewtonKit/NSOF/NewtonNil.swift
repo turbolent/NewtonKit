@@ -28,3 +28,11 @@ extension NewtonNil: ExpressibleByNilLiteral {
         self = NewtonNil.`nil`
     }
 }
+
+
+extension NewtonNil: CustomStringConvertible {
+
+    public var description: String {
+        return "nil"
+    }
+}

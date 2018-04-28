@@ -30,3 +30,10 @@ public struct NewtonUnicodeCharacter: NewtonObject {
     }
 }
 
+
+extension NewtonUnicodeCharacter: CustomStringConvertible {
+
+    public var description: String {
+        return String(format: "$\\u%4x", character)
+    }
+}

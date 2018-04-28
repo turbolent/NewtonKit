@@ -38,3 +38,10 @@ public struct NewtonTrue: NewtonObject {
     }
 }
 
+
+extension NewtonTrue: CustomStringConvertible {
+
+    public var description: String {
+        return "true"
+    }
+}

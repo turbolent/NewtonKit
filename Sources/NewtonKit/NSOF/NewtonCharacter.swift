@@ -52,3 +52,11 @@ public struct NewtonCharacter: NewtonObject {
         ])
     }
 }
+
+
+extension NewtonCharacter: CustomStringConvertible {
+
+    public var description: String {
+        return String(format: "$\\%2x", character)
+    }
+}
