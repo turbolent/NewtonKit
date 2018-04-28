@@ -22,7 +22,7 @@ import Foundation
 // • Strings are null-terminated 2-byte UniChar strings unless otherwise specified.
 
 
-public class DockPacketLayer {
+public final class DockPacketLayer {
 
     public enum DecodingError: Error {
         case invalidSize

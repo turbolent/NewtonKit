@@ -1,7 +1,7 @@
 
 import Foundation
 
-public class DockConnectionLayer {
+public final class DockConnectionLayer {
 
     public enum State {
         case idle
