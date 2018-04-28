@@ -4,7 +4,7 @@ import Foundation
 import NewtonKit
 
 
-class CommandPrompt {
+final class CommandPrompt {
 
     private enum State {
         case idle
@@ -69,8 +69,6 @@ class CommandPrompt {
                 print("stopped keyboard passthrough\n")
                 self.state = .idle
             }
-        default:
-            break
         }
     }
 

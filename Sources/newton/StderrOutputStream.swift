@@ -1,7 +1,7 @@
 
 import Foundation
 
-class StderrOutputStream: TextOutputStream {
+final class StderrOutputStream: TextOutputStream {
     func write(_ string: String) {
         fputs(string, stderr)
     }

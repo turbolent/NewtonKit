@@ -3,7 +3,7 @@ import Foundation
 
 // MNP / V.42 error correction T-REC-V.42-199303, Annex A
 
-public class MNPConnectionLayer {
+public final class MNPConnectionLayer {
 
     public enum Error: Swift.Error {
         case closed
