@@ -43,3 +43,10 @@ public final class NewtonPlainArray: NewtonObject {
     }
 }
 
+
+extension NewtonPlainArray: ExpressibleByArrayLiteral {
+
+    public convenience init(arrayLiteral elements: NewtonObject...) {
+        self.init(values: elements)
+    }
+}

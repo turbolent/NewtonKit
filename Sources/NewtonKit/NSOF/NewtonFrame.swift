@@ -63,3 +63,16 @@ public final class NewtonFrame: NewtonObject {
         return data
     }
 }
+
+
+extension NewtonFrame: ExpressibleByDictionaryLiteral {
+
+    public convenience init(dictionaryLiteral elements: (String, NewtonObject)...) {
+        let slots = elements.map { element -> NewtonFrame.Slot in
+            let (key, value) = element
+            return Slot(tag: NewtonSymbol(name: key),
+                        value: value)
+        }
+        self.init(slots: slots)
+    }
+}

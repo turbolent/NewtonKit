@@ -6,10 +6,18 @@ public struct InternalStorePacket: DecodableDockPacket {
 
     public static let command: DockCommand = .internalStore
 
-    // TODO: NSOF
-    public let data: Data
+    public enum DecodingError: Error {
+        case missingInternalStore
+    }
+
+    public let internalStore: NewtonObject
 
     public init(data: Data) throws {
-        self.data = data
+        guard let internalStore =
+            try NewtonObjectDecoder.decodeRoot(data: data)
+        else {
+            throw DecodingError.missingInternalStore
+        }
+        self.internalStore = internalStore
     }
 }

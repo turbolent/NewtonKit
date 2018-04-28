@@ -40,3 +40,11 @@ public final class NewtonInteger: NewtonObject {
         return data
     }
 }
+
+
+extension NewtonInteger: ExpressibleByIntegerLiteral {
+
+    public convenience init(integerLiteral: Int32) {
+        self.init(integer: integerLiteral)
+    }
+}

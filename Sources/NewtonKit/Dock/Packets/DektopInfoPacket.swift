@@ -22,15 +22,14 @@ public struct DesktopInfoPacket: EncodableDockPacket {
     public let encryptedKey: Data
     public let sessionType: DockSessionType
     public let allowSelectiveSync: Bool
-    // TODO: NSOF
-    public let desktopApps: Data
+    public let desktopApps: NewtonPlainArray
 
     public init(protocolVersion: UInt32,
                 desktopType: DesktopType,
                 encryptedKey: Data,
                 sessionType: DockSessionType,
                 allowSelectiveSync: Bool,
-                desktopApps: Data) throws {
+                desktopApps: NewtonPlainArray) throws {
 
         guard encryptedKey.count == DesktopInfoPacket.keySize else {
             throw InitializationError.invalidKeySize
@@ -51,7 +50,7 @@ public struct DesktopInfoPacket: EncodableDockPacket {
         data.append(encryptedKey)
         data.append(sessionType.rawValue.bigEndianData)
         data.append(UInt32(allowSelectiveSync ? 1 : 0).bigEndianData)
-        data.append(desktopApps)
+        data.append(NewtonObjectEncoder.encodeRoot(newtonObject: desktopApps))
         return data
     }
 }

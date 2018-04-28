@@ -401,16 +401,14 @@ class NewtonKitTests: XCTestCase {
             return
         }
 
-        let expected = NewtonPlainArray(values: [
-            NewtonFrame(slots: [
-                NewtonFrame.Slot(tag: NewtonSymbol(name: "id"),
-                                 value: NewtonInteger(integer: 2)),
-                NewtonFrame.Slot(tag: NewtonSymbol(name: "name"),
-                                 value: NewtonString(string: "Newton Connection Utilities")),
-                NewtonFrame.Slot(tag: NewtonSymbol(name: "version"),
-                                 value: NewtonInteger(integer: 1)),
-            ])
-        ])
+        let expected: NewtonPlainArray =
+            [
+                [
+                    "id": 2 as NewtonInteger,
+                    "name": "Newton Connection Utilities" as NewtonString,
+                    "version": 1 as NewtonInteger
+                ] as NewtonFrame
+            ]
 
         XCTAssertEqual(NewtonObjectEncoder.encodeRoot(newtonObject: decoded), data)
         XCTAssertEqual(NewtonObjectEncoder.encodeRoot(newtonObject: expected), data)
@@ -446,46 +444,28 @@ class NewtonKitTests: XCTestCase {
             return
         }
 
-        let walter = NewtonString(string: "Walter Smith")
+        let walter: NewtonString = "Walter Smith"
 
-        let expected = NewtonFrame(slots: [
-                NewtonFrame.Slot(
-                    tag: NewtonSymbol(name: "name"),
-                    value: walter
-                ),
-                NewtonFrame.Slot(
-                    tag: NewtonSymbol(name: "cats"),
-                    value: NewtonInteger(integer: 2)
-                ),
-                NewtonFrame.Slot(
-                    tag: NewtonSymbol(name: "bounds"),
-                    value: NewtonSmallRect(top: 14, left: 10, bottom: 100, right: 40)
-                ),
-                NewtonFrame.Slot(
-                    tag: NewtonSymbol(name: "uchar"),
-                    value: NewtonUnicodeCharacter(character: 8226)
-                ),
-                NewtonFrame.Slot(
-                    tag: NewtonSymbol(name: "phones"),
-                    value: NewtonPlainArray(values: [
-                        NewtonString(string: "408-996-1010"),
-                        NewtonBinary(
-                            class: NewtonSymbol(name: "faxPhone"),
-                            data: Data(bytes: [
-                                // 408-974-9094
-                                0x00, 0x34, 0x00, 0x30, 0x00, 0x38, 0x00, 0x2D,
-                                0x00, 0x39, 0x00, 0x37, 0x00, 0x34, 0x00, 0x2D,
-                                0x00, 0x39, 0x00, 0x30, 0x00, 0x39, 0x00, 0x34,
-                                0x00, 0x00
-                            ])
-                        )
+        let expected: NewtonFrame = [
+            "name": walter,
+            "cats": 2 as NewtonInteger,
+            "bounds": NewtonSmallRect(top: 14, left: 10, bottom: 100, right: 40),
+            "uchar": NewtonUnicodeCharacter(character: 8226),
+            "phones": [
+                "408-996-1010" as NewtonString,
+                NewtonBinary(
+                    class: NewtonSymbol(name: "faxPhone"),
+                    data: Data(bytes: [
+                        // 408-974-9094
+                        0x00, 0x34, 0x00, 0x30, 0x00, 0x38, 0x00, 0x2D,
+                        0x00, 0x39, 0x00, 0x37, 0x00, 0x34, 0x00, 0x2D,
+                        0x00, 0x39, 0x00, 0x30, 0x00, 0x39, 0x00, 0x34,
+                        0x00, 0x00
                     ])
-                ),
-                NewtonFrame.Slot(
-                    tag: NewtonSymbol(name: "nameAgain"),
-                    value: walter
                 )
-            ])
+            ] as NewtonPlainArray,
+            "nameAgain": walter
+        ]
 
         XCTAssertEqual(NewtonObjectEncoder.encodeRoot(newtonObject: decoded), data)
         XCTAssertEqual(NewtonObjectEncoder.encodeRoot(newtonObject: expected), data)
@@ -502,7 +482,7 @@ class NewtonKitTests: XCTestCase {
             ("testDockLayerReadRequestToDockPacket", testDockLayerReadRequestToDockPacket),
             ("testDockLayerReadResultPacket", testDockLayerReadResultPacket),
             ("testDockLayerReadPartial", testDockLayerReadPartial),
-            ("testDES", testDES)
+            ("testDES", testDES),
             ("testNSOF1", testNSOF1),
             ("testNSOF2", testNSOF2),
             ("testNSOF3", testNSOF3)

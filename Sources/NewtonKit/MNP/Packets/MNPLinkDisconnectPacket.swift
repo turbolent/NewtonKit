@@ -1,6 +1,7 @@
 
 import Foundation
 
+
 // MNP / V.42 error correction T-REC-V.42-199303, Annex A
 
 // A.6.5.1 Link disconnect (LD) frame
@@ -79,4 +80,3 @@ public struct MNPLinkDisconnectPacket: MNPPacket {
         ])
     }
 }
-

@@ -38,4 +38,3 @@ public struct CurrentTimePacket: DecodableDockPacket {
         )
     }
 }
-

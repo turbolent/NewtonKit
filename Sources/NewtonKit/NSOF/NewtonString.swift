@@ -50,3 +50,11 @@ public final class NewtonString: NewtonObject {
         return data
     }
 }
+
+
+extension NewtonString: ExpressibleByStringLiteral {
+
+    public convenience init(stringLiteral: String) {
+        self.init(string: stringLiteral)
+    }
+}

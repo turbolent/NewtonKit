@@ -1,6 +1,7 @@
 
 import Foundation
 
+
 extension Data {
     
     public var hexLine: String {

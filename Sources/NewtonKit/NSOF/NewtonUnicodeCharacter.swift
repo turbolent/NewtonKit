@@ -2,7 +2,7 @@
 import Foundation
 
 
-public final class NewtonUnicodeCharacter: NewtonObject {
+public struct NewtonUnicodeCharacter: NewtonObject {
 
     public enum DecodingError: Error {
         case missingCharacter

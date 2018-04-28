@@ -2,7 +2,7 @@
 import Foundation
 
 
-public final class NewtonTrue: NewtonObject {
+public struct NewtonTrue: NewtonObject {
 
     public enum DecodingError: Error {
         case missingValue

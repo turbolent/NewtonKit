@@ -1,6 +1,7 @@
 
 import Foundation
 
+
 // MNP / V.42 error correction T-REC-V.42-199303, Annex A
 
 public final class MNPPacketLayer {
@@ -217,4 +218,3 @@ public final class MNPPacketLayer {
         return result
     }
 }
-

@@ -51,5 +51,3 @@ public final class NewtonArray: NewtonObject {
         return data
     }
 }
-
-

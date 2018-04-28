@@ -2,7 +2,7 @@
 import Foundation
 
 
-public final class NewtonNil: NewtonObject {
+public struct NewtonNil: NewtonObject {
 
     public static let `nil` = NewtonNil()
 
@@ -18,5 +18,13 @@ public final class NewtonNil: NewtonObject {
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
         return Data(bytes: [NewtonObjectType.`nil`.rawValue])
+    }
+}
+
+
+extension NewtonNil: ExpressibleByNilLiteral {
+
+    public init(nilLiteral: ()) {
+        self = NewtonNil.`nil`
     }
 }

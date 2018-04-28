@@ -1,6 +1,7 @@
 
 import Foundation
 
+
 public struct KeyboardCharPacket: EncodableDockPacket {
 
     public static let command: DockCommand = .keyboardChar
@@ -20,4 +21,3 @@ public struct KeyboardCharPacket: EncodableDockPacket {
         return data
     }
 }
-

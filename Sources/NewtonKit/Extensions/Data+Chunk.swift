@@ -1,6 +1,7 @@
 
 import Foundation
 
+
 extension Data {
     public func chunk(n: Int) -> [Data] {
         return stride(from: 0, to: count, by: n)

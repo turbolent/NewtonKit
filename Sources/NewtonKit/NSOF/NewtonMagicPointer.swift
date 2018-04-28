@@ -2,7 +2,7 @@
 import Foundation
 
 
-public final class NewtonMagicPointer: NewtonObject {
+public struct NewtonMagicPointer: NewtonObject {
 
     public enum DecodingError: Error {
         case missingValue
@@ -40,4 +40,3 @@ public final class NewtonMagicPointer: NewtonObject {
         return data
     }
 }
-
