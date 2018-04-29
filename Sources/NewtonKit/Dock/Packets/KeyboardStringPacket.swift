@@ -13,10 +13,7 @@ public struct KeyboardStringPacket: EncodableDockPacket {
     }
 
     public func encode() -> Data? {
-        var data = Data()
-        for character in string.utf16 {
-            data.append(UInt16(character).bigEndianData)
-        }
+        var data = string.data(using: .utf16BigEndian)!
         data.append(contentsOf: [0, 0])
         return data
     }
