@@ -95,7 +95,7 @@ public final class DockConnectionLayer {
             }
         case .sentWhichIcons:
             if let resultPacket = packet as? ResultPacket {
-                guard resultPacket.errorCode == 0 else {
+                guard resultPacket.error == .ok else {
                     throw Error.sendingWhichIconsFailed
                 }
                 try write(packet: SetTimeoutPacket(timeout: DockConnectionLayer.timeout))
@@ -136,8 +136,7 @@ public final class DockConnectionLayer {
             switch packet {
             case let syncOptionsPacket as SyncOptionsPacket:
                 guard let syncOptions = syncOptionsPacket.syncOptions as? NewtonFrame else {
-                    // TODO:
-                    try write(packet: ResultPacket(errorCode: -28000 - 28))
+                    try write(packet: ResultPacket(error: .desktopError))
                     break
                 }
                 self.syncOptions = syncOptions
@@ -153,8 +152,7 @@ public final class DockConnectionLayer {
                     let signature = store["signature"] as? NewtonInteger,
                     let kind = store["kind"] as? NewtonString
                 else {
-                    // TODO:
-                    try write(packet: ResultPacket(errorCode: -28000 - 28))
+                    try write(packet: ResultPacket(error: .desktopError))
                     break
                 }
 

@@ -10,10 +10,10 @@ public struct ResultPacket: CodableDockPacket, Equatable {
         case invalidErrorCode
     }
 
-    public let errorCode: Int32
+    public let error: DockError
 
-    public init(errorCode: Int32) {
-        self.errorCode = errorCode
+    public init(error: DockError) {
+        self.error = error
     }
 
     public init(data: Data) throws {
@@ -22,14 +22,18 @@ public struct ResultPacket: CodableDockPacket, Equatable {
             throw DecodingError.invalidErrorCode
         }
 
-        self.init(errorCode: errorCode)
+        guard let error = DockError(rawValue: errorCode) else {
+            throw DecodingError.invalidErrorCode
+        }
+
+        self.init(error: error)
     }
 
     public func encode() -> Data? {
-        return errorCode.bigEndianData
+        return error.rawValue.bigEndianData
     }
 
     public static func ==(lhs: ResultPacket, rhs: ResultPacket) -> Bool {
-        return lhs.errorCode == rhs.errorCode
+        return lhs.error == rhs.error
     }
 }
