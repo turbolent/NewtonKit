@@ -372,10 +372,14 @@ class NewtonKitTests: XCTestCase {
             0xff, 0xeb, 0xe8, 0x99, 0x5c
         ])
 
-        guard let decoded = try NewtonObjectDecoder.decodeRoot(data: data) else {
+        guard case let (decoded?, readCount) =
+            try NewtonObjectDecoder.decodeRoot(data: data)
+        else {
             XCTFail("Failed to decode frame")
             return
         }
+
+        XCTAssertEqual(readCount, data.count)
 
         XCTAssertEqual(NewtonObjectEncoder.encodeRoot(newtonObject: decoded), data)
     }
@@ -396,10 +400,14 @@ class NewtonKitTests: XCTestCase {
             0x00, 0x73, 0x00, 0x00, 0x00, 0x04
         ])
 
-        guard let decoded = try NewtonObjectDecoder.decodeRoot(data: data) else {
+        guard case let (decoded?, readCount) =
+            try NewtonObjectDecoder.decodeRoot(data: data)
+        else {
             XCTFail("Failed to decode NSOF")
             return
         }
+
+        XCTAssertEqual(readCount, data.count)
 
         let expected: NewtonPlainArray =
             [
@@ -439,10 +447,14 @@ class NewtonKitTests: XCTestCase {
             0x34, 0x00, 0x00, 0x09, 0x07
         ])
 
-        guard let decoded = try NewtonObjectDecoder.decodeRoot(data: data) else {
+        guard case let (decoded?, readCount) =
+            try NewtonObjectDecoder.decodeRoot(data: data)
+        else {
             XCTFail("Failed to decode NSOF")
             return
         }
+
+        XCTAssertEqual(readCount, data.count)
 
         let walter: NewtonString = "Walter Smith"
 
