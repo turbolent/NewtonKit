@@ -40,7 +40,8 @@ public class NewtonObjectDecoder {
         case invalidPrecedentID
     }
 
-    public static func decodeRoot(data: Data) throws -> NewtonObject? {
+    public static func decodeRoot(data: Data) throws -> (object: NewtonObject?, readCount: Int) {
+        let total = data.count
         let decoder = NewtonObjectDecoder(data: data)
         guard let version = decoder.decodeByte() else {
             throw DecodingError.missingVersion
@@ -50,7 +51,9 @@ public class NewtonObjectDecoder {
             throw DecodingError.invalidVersion
         }
 
-        return try decoder.decodeObject()
+        let object = try decoder.decodeObject()
+        let readCount = total - decoder.data.count
+        return (object, readCount)
     }
 
     private var data: Data
