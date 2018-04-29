@@ -49,7 +49,7 @@ final class CommandPrompt {
             return
         }
 
-        try dockConnectionLayer.sendKeyboardString(line)
+        try dockConnectionLayer.keyboardPassthroughLayer.sendString(line)
     }
 
     func handleDockConnectionState(state: DockConnectionLayer.State) {
@@ -89,7 +89,7 @@ final class CommandPrompt {
                 }
             case .keyboardPassthrough:
                 if line == ".stop" {
-                    try dockConnectionLayer.stopKeyboardPassthrough()
+                    try dockConnectionLayer.keyboardPassthroughLayer.stop()
                 } else {
                     try sendKeyboardString(line)
                 }

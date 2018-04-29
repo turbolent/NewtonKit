@@ -10,9 +10,8 @@ public final class DockConnectionLayer {
         case sentWhichIcons
         case sentSetTimeout
         case connected
-        case sentKeyboardPassthrough
         case keyboardPassthrough
-        case initiatedSync
+        case backingUp
         case disconnected
     }
 
@@ -21,7 +20,6 @@ public final class DockConnectionLayer {
         case missingNewtonKey
         case newtonKeyEnryptionKeyFailed
         case notConnected
-        case notInKeyboardPassthrough
     }
 
     private static let timeout: UInt32 = 60
@@ -53,10 +51,13 @@ public final class DockConnectionLayer {
     private var des: DES
     private var newtonKey: Data?
 
-    private var syncOptions: NewtonFrame?
+    public let keyboardPassthroughLayer = DockKeyboardPassthroughLayer()
+    public let backupLayer = DockBackupLayer()
 
     public init() throws {
         des = try DES(keyBytes: DockConnectionLayer.desKey)
+        keyboardPassthroughLayer.connectionLayer = self
+        backupLayer.connectionLayer = self
     }
 
     public func read(packet: DecodableDockPacket) throws {
@@ -65,6 +66,8 @@ public final class DockConnectionLayer {
 
         if packet is DisconnectPacket {
             state = .disconnected
+            keyboardPassthroughLayer.handleDisconnect()
+            backupLayer.handleDisconnect()
             onDisconnect?()
             return
         }
@@ -117,118 +120,64 @@ public final class DockConnectionLayer {
             case is OperationCanceledPacket:
                 try write(packet: OperationCanceledAcknowledgementPacket())
                 state = .connected
-            case is StartKeyboardPassthroughPacket:
-                try write(packet: StartKeyboardPassthroughPacket())
+            case is StartKeyboardPassthroughPacket:                
+                try keyboardPassthroughLayer.handleRequest()
                 state = .keyboardPassthrough
             case is RequestToSyncPacket:
-                try write(packet: GetSyncOptionsPacket())
-                state = .initiatedSync
+                try backupLayer.handleRequest()
+                state = .backingUp
             default:
                 break
-            }
-        case .sentKeyboardPassthrough:
-            if packet is StartKeyboardPassthroughPacket {
-                state = .keyboardPassthrough
             }
         case .keyboardPassthrough:
-            break
-        case .initiatedSync:
-            switch packet {
-            case let syncOptionsPacket as SyncOptionsPacket:
-                guard let syncOptions = syncOptionsPacket.syncOptions as? NewtonFrame else {
-                    try write(packet: ResultPacket(error: .desktopError))
-                    break
-                }
-                self.syncOptions = syncOptions
-
-                // request the time the current store was last backed up
-                try write(packet: LastSyncTimePacket())
-            case is CurrentTimePacket:
-                guard
-                    let syncOptions = syncOptions,
-                    let stores = syncOptions["stores"] as? NewtonPlainArray,
-                    let store = stores[0] as? NewtonFrame,
-                    let name = store["name"] as? NewtonString,
-                    let signature = store["signature"] as? NewtonInteger,
-                    let kind = store["kind"] as? NewtonString
-                else {
-                    try write(packet: ResultPacket(error: .desktopError))
-                    break
-                }
-
-                try write(packet: SetStoreGetNamesPacket(storeFrame: [
-                    "name": name,
-                    "kind": kind,
-                    "signature": signature
-                ]))
-            case is SoupNamesPacket:
-                // TODO: all soups
-                try write(packet: SetSoupGetInfoPacket(name: "Notes"))
-            case is SoupInfoPacket:
-                try write(packet: GetSoupIDsPacket())
-            case let soupIDsPacket as SoupIDsPacket:
-                try write(packet: ReturnEntryPacket(id: 0))
-            case is EntryPacket:
-                try write(packet: OperationDonePacket())
-            case is OperationCanceledPacket:
-                try write(packet: OperationCanceledAcknowledgementPacket())
-                state = .connected
-            default:
-                break
-            }
+            try keyboardPassthroughLayer.read(packet: packet)
+        case .backingUp:
+            try backupLayer.read(packet: packet)
         case .disconnected:
             break
         }
     }
 
-    private func write(packet: EncodableDockPacket) throws {
+    internal func write(packet: EncodableDockPacket) throws {
         try onWrite?(packet)
+    }
+
+    public func startKeyboardPassthrough() throws {
+        if state == .keyboardPassthrough {
+            return
+        }
+
+        guard state == .connected else {
+            throw Error.notConnected
+        }
+
+        try keyboardPassthroughLayer.start()
+        state = .keyboardPassthrough
+    }
+
+    public func startBackup() throws {
+        if state == .backingUp {
+            return
+        }
+
+        guard state == .connected else {
+            throw Error.notConnected
+        }
+
+        try backupLayer.start()
+        state = .backingUp
     }
 
     public func startDesktopControl() throws {
         try write(packet: DesktopInControlPacket())
     }
 
-    public func startKeyboardPassthrough() throws {
-        guard state == .connected else {
-            throw Error.notConnected
-        }
-
-        try startDesktopControl()
-        try write(packet: StartKeyboardPassthroughPacket())
-        state = .sentKeyboardPassthrough
-    }
-
-    public func sendKeyboardCharacter(_ character: UInt16) throws {
-        guard state == .keyboardPassthrough else {
-            throw Error.notInKeyboardPassthrough
-        }
-
-        try write(packet: KeyboardCharPacket(character: character, state: 1))
-    }
-
-    public func sendKeyboardString(_ string: String) throws {
-        guard state == .keyboardPassthrough else {
-            throw Error.notInKeyboardPassthrough
-        }
-
-        try write(packet: KeyboardStringPacket(string: string))
-    }
-
-    public func stopKeyboardPassthrough() throws {
-        if state == .connected {
-            return
-        }
-
-        guard .keyboardPassthrough == state else {
-            throw Error.notInKeyboardPassthrough
-        }
-
-        try stopDesktopControl()
+    public func completeOperation() throws {
+        try write(packet: OperationDonePacket())
         state = .connected
     }
 
-    public func stopDesktopControl() throws {
-        try write(packet: OperationDonePacket())
+    public func acknowledgeOperationCanceled() throws {
+        try write(packet: OperationCanceledAcknowledgementPacket())
     }
 }
