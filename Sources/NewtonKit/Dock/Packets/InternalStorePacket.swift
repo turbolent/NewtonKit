@@ -13,7 +13,7 @@ public struct InternalStorePacket: DecodableDockPacket {
     public let internalStore: NewtonObject
 
     public init(data: Data) throws {
-        guard let internalStore =
+        guard case (let internalStore?, _) =
             try NewtonObjectDecoder.decodeRoot(data: data)
         else {
             throw DecodingError.missingInternalStore

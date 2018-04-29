@@ -13,10 +13,10 @@ public struct SyncOptionsPacket: DecodableDockPacket {
     public let syncOptions: NewtonObject
 
     public init(data: Data) throws {
-        guard let syncOptions =
+        guard case (let syncOptions?, _) =
             try NewtonObjectDecoder.decodeRoot(data: data)
-            else {
-                throw DecodingError.missingSyncOptions
+        else {
+            throw DecodingError.missingSyncOptions
         }
         self.syncOptions = syncOptions
     }
