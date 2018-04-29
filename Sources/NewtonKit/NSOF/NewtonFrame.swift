@@ -15,7 +15,8 @@ public final class NewtonFrame: NewtonObject {
         case invalidSlotValue
     }
 
-    public let slots: [Slot]
+    public let tags: [NewtonSymbol]
+    public let valuesByTag: [String: NewtonObject]
 
     public static func decode(decoder: NewtonObjectDecoder) throws -> NewtonFrame {
 
@@ -48,17 +49,26 @@ public final class NewtonFrame: NewtonObject {
     }
 
     public init(slots: [Slot]) {
-        self.slots = slots
+        tags = slots.map { $0.tag }
+        valuesByTag = [String: NewtonObject](uniqueKeysWithValues: slots.map {
+            ($0.tag.name, $0.value)
+        })
+    }
+
+    subscript(tagName: String) -> NewtonObject? {
+        get {
+            return valuesByTag[tagName]
+        }
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
         var data = Data(bytes: [NewtonObjectType.frame.rawValue])
-        data.append(NewtonObjectEncoder.encode(xlong: Int32(slots.count)))
-        for slot in slots {
-            data.append(encoder.encode(newtonObject: slot.tag))
+        data.append(NewtonObjectEncoder.encode(xlong: Int32(tags.count)))
+        for tag in tags {
+            data.append(encoder.encode(newtonObject: tag))
         }
-        for slot in slots {
-            data.append(encoder.encode(newtonObject: slot.value))
+        for tag in tags {
+            data.append(encoder.encode(newtonObject: valuesByTag[tag.name]!))
         }
         return data
     }
@@ -81,10 +91,11 @@ extension NewtonFrame: ExpressibleByDictionaryLiteral {
 extension NewtonFrame: CustomStringConvertible {
 
     public var description: String {
-        let contents = slots
-            .map { slot in
-                let tagDescription = String(describing: slot.tag)
-                let valueDescription = String(describing: slot.value)
+        let contents = tags
+            .map { tag in
+                let tagDescription = String(describing: tag)
+                let value = valuesByTag[tag.name]!
+                let valueDescription = String(describing: value)
                 return [tagDescription, valueDescription]
                     .joined(separator: ": ")
             }

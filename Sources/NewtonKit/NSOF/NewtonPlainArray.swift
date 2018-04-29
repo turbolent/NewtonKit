@@ -33,6 +33,12 @@ public final class NewtonPlainArray: NewtonObject {
         self.values = values
     }
 
+    subscript(index: Int) -> NewtonObject? {
+        get {
+            return values[index]
+        }
+    }
+
     public func encode(encoder: NewtonObjectEncoder) -> Data {
         var data = Data(bytes: [NewtonObjectType.plainArray.rawValue])
         data.append(NewtonObjectEncoder.encode(xlong: Int32(values.count)))
