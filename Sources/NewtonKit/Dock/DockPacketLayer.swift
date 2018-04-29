@@ -53,7 +53,11 @@ public final class DockPacketLayer {
         RequestToSyncPacket.self,
         SynchronizePacket.self,
         SyncOptionsPacket.self,
-        CurrentTimePacket.self
+        CurrentTimePacket.self,
+        SoupNamesPacket.self,
+        SoupInfoPacket.self,
+        SoupIDsPacket.self,
+        EntryPacket.self
     ]
 
     public var onRead: ((DecodableDockPacket) throws -> Void)?

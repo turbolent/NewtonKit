@@ -53,6 +53,8 @@ public final class DockConnectionLayer {
     private var des: DES
     private var newtonKey: Data?
 
+    private var syncOptions: NewtonFrame?
+
     public init() throws {
         des = try DES(keyBytes: DockConnectionLayer.desKey)
     }
@@ -80,7 +82,7 @@ public final class DockConnectionLayer {
                                           desktopType: .macintosh,
                                           encryptedKey: DockConnectionLayer.desktopKey,
                                           sessionType: .settingUpSession,
-                                          allowSelectiveSync: true,
+                                          allowSelectiveSync: false,
                                           desktopApps: DockConnectionLayer.desktopApps)
                 try write(packet: packet)
                 state = .sentDesktopInfo
@@ -132,12 +134,44 @@ public final class DockConnectionLayer {
             break
         case .initiatedSync:
             switch packet {
-            case is SyncOptionsPacket:
+            case let syncOptionsPacket as SyncOptionsPacket:
+                guard let syncOptions = syncOptionsPacket.syncOptions as? NewtonFrame else {
+                    // TODO:
+                    try write(packet: ResultPacket(errorCode: -28000 - 28))
+                    break
+                }
+                self.syncOptions = syncOptions
+
                 // request the time the current store was last backed up
                 try write(packet: LastSyncTimePacket())
             case is CurrentTimePacket:
-                // TODO:
-                break
+                guard
+                    let syncOptions = syncOptions,
+                    let stores = syncOptions["stores"] as? NewtonPlainArray,
+                    let store = stores[0] as? NewtonFrame,
+                    let name = store["name"] as? NewtonString,
+                    let signature = store["signature"] as? NewtonInteger,
+                    let kind = store["kind"] as? NewtonString
+                else {
+                    // TODO:
+                    try write(packet: ResultPacket(errorCode: -28000 - 28))
+                    break
+                }
+
+                try write(packet: SetStoreGetNamesPacket(storeFrame: [
+                    "name": name,
+                    "kind": kind,
+                    "signature": signature
+                ]))
+            case is SoupNamesPacket:
+                // TODO: all soups
+                try write(packet: SetSoupGetInfoPacket(name: "Notes"))
+            case is SoupInfoPacket:
+                try write(packet: GetSoupIDsPacket())
+            case let soupIDsPacket as SoupIDsPacket:
+                try write(packet: ReturnEntryPacket(id: 0))
+            case is EntryPacket:
+                try write(packet: OperationDonePacket())
             case is OperationCanceledPacket:
                 try write(packet: OperationCanceledAcknowledgementPacket())
                 state = .connected
