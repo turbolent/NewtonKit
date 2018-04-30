@@ -20,6 +20,8 @@ let package = Package(
         .target(name: "NewtonDock", dependencies: ["Extensions", "NSOF"]),
         .target(name: "NewtonKit", dependencies: ["NSOF", "Extensions", "MNP", "NewtonDock", "NewtonSerialPort"]),
         .target(name: "newton", dependencies: ["NewtonKit"]),
-        .testTarget(name: "NewtonKitTests", dependencies: ["NewtonKit"])
+        .testTarget(name: "MNPTests", dependencies: ["MNP"]),
+        .testTarget(name: "NSOFTests", dependencies: ["NSOF"]),
+        .testTarget(name: "NewtonDockTests", dependencies: ["NewtonDock"]),
     ]
 )

@@ -1,6 +1,10 @@
 import XCTest
-@testable import NewtonKitTests
+@testable import NewtonDockTests
+@testable import MNPTests
+@testable import NSOFTests
 
 XCTMain([
-    testCase(NewtonKitTests.allTests),
+    testCase(NewtonDockTests.allTests),
+    testCase(MNPTests.allTests),
+    testCase(NSOFTests.allTests),
 ])
