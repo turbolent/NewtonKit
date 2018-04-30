@@ -33,7 +33,7 @@ public final class NewtonPlainArray: NewtonObject {
         self.values = values
     }
 
-    subscript(index: Int) -> NewtonObject? {
+    public subscript(index: Int) -> NewtonObject? {
         get {
             return values[index]
         }

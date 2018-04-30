@@ -1,5 +1,6 @@
 
 import Foundation
+import NSOF
 
 
 public struct SetCurrentStorePacket: EncodableDockPacket {

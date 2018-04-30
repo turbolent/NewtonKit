@@ -1,5 +1,6 @@
 
 import Foundation
+import Extensions
 
 
 // Newton Streamed Object Format

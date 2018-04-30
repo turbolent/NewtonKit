@@ -2,14 +2,14 @@
 import Foundation
 
 
-extension Data {
+public extension Data {
     
-    public var hexLine: String {
+    var hexLine: String {
         return map { String(format: "%02x", $0) }
             .joined(separator: " ")
     }
 
-    public var hexDump: String {
+    var hexDump: String {
         let subChunkWidth = 8
         let chunkWidth = subChunkWidth * 2
 

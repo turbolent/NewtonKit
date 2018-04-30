@@ -55,7 +55,7 @@ public final class NewtonFrame: NewtonObject {
         })
     }
 
-    subscript(tagName: String) -> NewtonObject? {
+    public subscript(tagName: String) -> NewtonObject? {
         get {
             return valuesByTag[tagName]
         }

@@ -2,8 +2,8 @@
 import Foundation
 
 
-extension Data {
-    public func chunk(n: Int) -> [Data] {
+public extension Data {
+    func chunk(n: Int) -> [Data] {
         return stride(from: 0, to: count, by: n)
             .map { startOffset in
                 let startIndex = self.startIndex.advanced(by: startOffset)

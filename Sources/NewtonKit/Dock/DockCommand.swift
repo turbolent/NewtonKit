@@ -1,7 +1,4 @@
 
-import Foundation
-
-
 public enum DockCommand: String {
 
     // Starting a Session

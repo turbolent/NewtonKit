@@ -1,6 +1,7 @@
 import Foundation
 import XCTest
 @testable import NewtonKit
+import NSOF
 
 
 class NewtonKitTests: XCTestCase {

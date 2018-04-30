@@ -1,7 +1,4 @@
 
-import Foundation
-
-
 public struct DockIconMask: OptionSet {
 
     public let rawValue: UInt32

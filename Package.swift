@@ -8,7 +8,9 @@ let package = Package(
         .library(name: "NewtonKit", targets: ["NewtonKit"]),
     ],
     targets: [
-        .target(name: "NewtonKit"),
+        .target(name: "Extensions"),
+        .target(name: "NSOF", dependencies: ["Extensions"]),
+        .target(name: "NewtonKit", dependencies: ["NSOF", "Extensions"]),
         .target(name: "newton", dependencies: ["NewtonKit"]),
         .testTarget(name: "NewtonKitTests", dependencies: ["NewtonKit"])
     ]
