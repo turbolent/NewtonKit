@@ -1,5 +1,7 @@
 import Foundation
 import NewtonKit
+import MNP
+import NewtonDock
 
 
 let debugMNP = false

@@ -1,8 +1,9 @@
 import Foundation
 import XCTest
+@testable import MNP
+@testable import NSOF
+@testable import NewtonDock
 @testable import NewtonKit
-import NSOF
-
 
 class NewtonKitTests: XCTestCase {
 

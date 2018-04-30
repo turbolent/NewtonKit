@@ -1,5 +1,6 @@
 
 import Foundation
+import Extensions
 
 
 // MNP / V.42 error correction T-REC-V.42-199303, Annex A

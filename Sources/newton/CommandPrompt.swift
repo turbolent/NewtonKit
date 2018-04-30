@@ -2,6 +2,7 @@
 
 import Foundation
 import NewtonKit
+import NewtonDock
 import NSOF
 
 
