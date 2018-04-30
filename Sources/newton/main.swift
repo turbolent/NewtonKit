@@ -2,6 +2,7 @@ import Foundation
 import NewtonKit
 import MNP
 import NewtonDock
+import NewtonSerialPort
 
 
 let debugMNP = false
@@ -11,7 +12,7 @@ guard CommandLine.arguments.count > 1 else {
 }
 
 let path = CommandLine.arguments[1]
-let serialPort = try SerialPort(path: path)
+let serialPort = try NewtonSerialPort(path: path)
 
 let group = DispatchGroup()
 group.enter()

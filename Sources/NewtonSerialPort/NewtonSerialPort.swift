@@ -3,7 +3,7 @@ import Foundation
 import Darwin.C.errno
 
 
-public final class SerialPort {
+public final class NewtonSerialPort {
 
     public enum Error: Swift.Error {
         case failedToOpen

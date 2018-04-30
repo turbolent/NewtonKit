@@ -9,14 +9,16 @@ let package = Package(
         .library(name: "NSOF", targets: ["NSOF"]),
         .library(name: "MNP", targets: ["MNP"]),
         .library(name: "NewtonDock", targets: ["NewtonDock"]),
+        .library(name: "NewtonSerialPort", targets: ["NewtonSerialPort"]),
     ],
     ],
     targets: [
         .target(name: "Extensions"),
+        .target(name: "NewtonSerialPort"),
         .target(name: "MNP", dependencies: ["Extensions"]),
         .target(name: "NSOF", dependencies: ["Extensions"]),
         .target(name: "NewtonDock", dependencies: ["Extensions", "NSOF"]),
-        .target(name: "NewtonKit", dependencies: ["NSOF", "Extensions", "MNP", "NewtonDock"]),
+        .target(name: "NewtonKit", dependencies: ["NSOF", "Extensions", "MNP", "NewtonDock", "NewtonSerialPort"]),
         .target(name: "newton", dependencies: ["NewtonKit"]),
         .testTarget(name: "NewtonKitTests", dependencies: ["NewtonKit"])
     ]
