@@ -346,14 +346,13 @@ public final class MNPConnectionLayer {
 
     private func sendLinkResponse(linkRequest: MNPLinkRequestPacket) {
         // create a new packet, to ensure correct constant parameters are encoded
-        let linkResponse = MNPLinkRequestPacket(
-            framingMode: linkRequest.framingMode,
-            maxOutstandingLTFrameCount: linkRequest.maxOutstandingLTFrameCount,
-            maxInfoLength: linkRequest.maxInfoLength,
-            maxInfoLength256: linkRequest.maxInfoLength256,
-            fixedFieldLTAndLAFrames: linkRequest.fixedFieldLTAndLAFrames,
-            validationErrors: Set()
-        )
+        let linkResponse =
+            MNPLinkRequestPacket(framingMode: linkRequest.framingMode,
+                                 maxOutstandingLTFrameCount: linkRequest.maxOutstandingLTFrameCount,
+                                 maxInfoLength: linkRequest.maxInfoLength,
+                                 maxInfoLength256: linkRequest.maxInfoLength256,
+                                 fixedFieldLTAndLAFrames: linkRequest.fixedFieldLTAndLAFrames,
+                                 validationErrors: Set())
 
         self.linkResponse = linkResponse
 

@@ -10,10 +10,13 @@ final class CommandPrompt {
         case idle
         case initiatingKeyboardPassthrough
         case keyboardPassthrough
+        case initiatingBackup
+        case backingUp
     }
 
     private enum Command: String {
         case keyboard
+        case backup
     }
 
 
@@ -52,6 +55,21 @@ final class CommandPrompt {
         try dockConnectionLayer.keyboardPassthroughLayer.sendString(line)
     }
 
+    private func stopKeyboardPassthrough() throws {
+        try dockConnectionLayer.keyboardPassthroughLayer.stop()
+    }
+
+    private func startBackup() throws {
+        let dockState = dockConnectionLayer.state
+        guard dockState == .connected else {
+            print("Can't connect in dock connection state: \(dockState)")
+            return
+        }
+
+        state = .initiatingBackup
+        try dockConnectionLayer.startBackup()
+    }
+
     func handleDockConnectionState(state: DockConnectionLayer.State) {
         switch self.state {
         case .idle:
@@ -67,6 +85,16 @@ final class CommandPrompt {
         case .keyboardPassthrough:
             if state == .connected {
                 print("stopped keyboard passthrough\n")
+                self.state = .idle
+            }
+        case .initiatingBackup:
+            if state == .backingUp {
+                print("backup started\n")
+                self.state = .backingUp
+            }
+        case .backingUp:
+            if state == .connected {
+                print("backup finished\n")
                 self.state = .idle
             }
         }
@@ -85,11 +113,13 @@ final class CommandPrompt {
                     switch command {
                     case .keyboard:
                         try startKeyboardPassthrough()
+                    case .backup:
+                        try startBackup()
                     }
                 }
             case .keyboardPassthrough:
                 if line == ".stop" {
-                    try dockConnectionLayer.keyboardPassthroughLayer.stop()
+                    try stopKeyboardPassthrough()
                 } else {
                     try sendKeyboardString(line)
                 }

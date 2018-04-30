@@ -465,16 +465,14 @@ class NewtonKitTests: XCTestCase {
             "uchar": NewtonUnicodeCharacter(character: 8226),
             "phones": [
                 "408-996-1010" as NewtonString,
-                NewtonBinary(
-                    class: NewtonSymbol(name: "faxPhone"),
-                    data: Data(bytes: [
-                        // 408-974-9094
-                        0x00, 0x34, 0x00, 0x30, 0x00, 0x38, 0x00, 0x2D,
-                        0x00, 0x39, 0x00, 0x37, 0x00, 0x34, 0x00, 0x2D,
-                        0x00, 0x39, 0x00, 0x30, 0x00, 0x39, 0x00, 0x34,
-                        0x00, 0x00
-                    ])
-                )
+                NewtonBinary(class: NewtonSymbol(name: "faxPhone"),
+                             data: Data(bytes: [
+                                // 408-974-9094
+                                0x00, 0x34, 0x00, 0x30, 0x00, 0x38, 0x00, 0x2D,
+                                0x00, 0x39, 0x00, 0x37, 0x00, 0x34, 0x00, 0x2D,
+                                0x00, 0x39, 0x00, 0x30, 0x00, 0x39, 0x00, 0x34,
+                                0x00, 0x00
+                             ]))
             ] as NewtonPlainArray,
             "nameAgain": walter
         ]

@@ -168,16 +168,16 @@ public final class DockConnectionLayer {
         state = .backingUp
     }
 
-    public func startDesktopControl() throws {
+    internal func startDesktopControl() throws {
         try write(packet: DesktopInControlPacket())
     }
 
-    public func completeOperation() throws {
+    internal func completeOperation() throws {
         try write(packet: OperationDonePacket())
         state = .connected
     }
 
-    public func acknowledgeOperationCanceled() throws {
+    internal func acknowledgeOperationCanceled() throws {
         try write(packet: OperationCanceledAcknowledgementPacket())
     }
 }

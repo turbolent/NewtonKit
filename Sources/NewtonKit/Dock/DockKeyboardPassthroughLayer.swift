@@ -46,7 +46,7 @@ public class DockKeyboardPassthroughLayer {
         state = .inactive
     }
 
-    public func start() throws {
+    internal func start() throws {
         if state == .active || connectionLayer.state == .keyboardPassthrough  {
             return
         }
