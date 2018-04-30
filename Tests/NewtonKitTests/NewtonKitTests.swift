@@ -2,12 +2,6 @@ import Foundation
 import XCTest
 @testable import NewtonKit
 
-extension Data {
-    var debugDescription: String {
-        return map { String(format: "%x", $0) }
-            .joined(separator: ", ")
-    }
-}
 
 class NewtonKitTests: XCTestCase {
 
@@ -221,7 +215,7 @@ class NewtonKitTests: XCTestCase {
         }
 
         XCTAssertEqual(packet,
-                       ResultPacket(errorCode: 0))
+                       ResultPacket(error: .ok))
         XCTAssertEqual(try layer.write(packet: packet), initialData)
     }
 
@@ -236,7 +230,7 @@ class NewtonKitTests: XCTestCase {
             Data(bytes: [0x00, 0x00, 0x6e, 0x65, 0x77]),
             Data(bytes: [0x74, 0x64, 0x6f, 0x63, 0x6b, 0x64, 0x72]),
             Data(bytes: [0x65, 0x73, 0x00, 0x00, 0x00, 0x04, 0x00]),
-            Data(bytes: [0x00, 0x00, 0x01])
+            Data(bytes: [0x00, 0x00, 0x00])
         ]
 
         let layer = DockPacketLayer()
@@ -267,7 +261,7 @@ class NewtonKitTests: XCTestCase {
         }
 
         XCTAssertEqual(packet1,
-                       ResultPacket(errorCode: 0))
+                       ResultPacket(error: .ok))
 
 
         var readPacket2: DecodableDockPacket?
@@ -287,7 +281,7 @@ class NewtonKitTests: XCTestCase {
         }
 
         XCTAssertEqual(packet2,
-                       ResultPacket(errorCode: 1))
+                       ResultPacket(error: .ok))
     }
 
     func testDES() throws {
