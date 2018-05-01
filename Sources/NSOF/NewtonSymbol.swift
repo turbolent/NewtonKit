@@ -65,3 +65,11 @@ extension NewtonSymbol: CustomStringConvertible {
         return name
     }
 }
+
+
+extension NewtonSymbol: Equatable {
+
+    public static func ==(lhs: NewtonSymbol, rhs: NewtonSymbol) -> Bool {
+        return lhs.name == rhs.name
+    }
+}

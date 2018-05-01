@@ -60,3 +60,11 @@ extension NewtonCharacter: CustomStringConvertible {
         return String(format: "$\\%2x", character)
     }
 }
+
+
+extension NewtonCharacter: Equatable {
+
+    public static func ==(lhs: NewtonCharacter, rhs: NewtonCharacter) -> Bool {
+        return lhs.character == rhs.character
+    }
+}

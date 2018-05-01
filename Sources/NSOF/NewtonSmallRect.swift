@@ -66,3 +66,14 @@ extension NewtonSmallRect: CustomStringConvertible {
             + "right: \(String(describing: right))}"
     }
 }
+
+
+extension NewtonSmallRect: Equatable {
+
+    public static func ==(lhs: NewtonSmallRect, rhs: NewtonSmallRect) -> Bool {
+        return lhs.top == rhs.top
+            && lhs.left == rhs.left
+            && lhs.bottom == rhs.bottom
+            && lhs.right == rhs.right
+    }
+}

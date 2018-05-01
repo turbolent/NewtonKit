@@ -56,3 +56,11 @@ extension NewtonInteger: CustomStringConvertible {
         return String(describing: integer)
     }
 }
+
+
+extension NewtonInteger: Equatable {
+
+    public static func ==(lhs: NewtonInteger, rhs: NewtonInteger) -> Bool {
+        return lhs.integer == rhs.integer
+    }
+}

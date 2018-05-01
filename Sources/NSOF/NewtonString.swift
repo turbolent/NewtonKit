@@ -66,3 +66,11 @@ extension NewtonString: CustomStringConvertible {
         return String(reflecting: string)
     }
 }
+
+
+extension NewtonString: Equatable {
+
+    public static func ==(lhs: NewtonString, rhs: NewtonString) -> Bool {
+        return lhs.string == rhs.string
+    }
+}

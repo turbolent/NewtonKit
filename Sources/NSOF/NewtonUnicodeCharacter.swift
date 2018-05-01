@@ -37,3 +37,11 @@ extension NewtonUnicodeCharacter: CustomStringConvertible {
         return String(format: "$\\u%4x", character)
     }
 }
+
+
+extension NewtonUnicodeCharacter: Equatable {
+
+    public static func ==(lhs: NewtonUnicodeCharacter, rhs: NewtonUnicodeCharacter) -> Bool {
+        return lhs.character == rhs.character
+    }
+}
