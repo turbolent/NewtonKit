@@ -30,6 +30,7 @@ final class CommandPrompt {
 
     init(dockConnectionLayer: DockConnectionLayer) {
         self.dockConnectionLayer = dockConnectionLayer
+        dockConnectionLayer.backupLayer.onEntry = handleBackupEntry
     }
 
     private func prompt() -> String? {
@@ -129,5 +130,9 @@ final class CommandPrompt {
                 continue
             }
         }
+    }
+
+    private func handleBackupEntry(entry: NewtonFrame) {
+
     }
 }

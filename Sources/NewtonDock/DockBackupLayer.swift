@@ -24,6 +24,7 @@ private struct SoupProgress {
     let soupsProgress: SoupsProgress
 }
 
+
 public class DockBackupLayer {
 
     public enum Error: Swift.Error {
@@ -46,6 +47,8 @@ public class DockBackupLayer {
     private static let supportedSoups = ["Notes", "Calendar"]
 
     internal weak var connectionLayer: DockConnectionLayer!
+
+    public var onEntry: ((NewtonFrame) -> Void)?
 
     private var state: State = .inactive
 
@@ -263,8 +266,7 @@ public class DockBackupLayer {
             return
         }
 
-        // TODO:
-        debugPrint(entryPacket.entry)
+        onEntry?(entryPacket.entry)
 
         try requestNextEntry(soupProgress: soupProgress)
     }
