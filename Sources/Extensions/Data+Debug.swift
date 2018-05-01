@@ -27,10 +27,11 @@ public extension Data {
                     pad(subChunks[0].hexLine)
                 let subChunk2Formatted =
                     pad(subChunks.count > 1 ? subChunks[1].hexLine : "")
-                let humanReadable =
-                    String(format: "|%@|", chunkData.map {
+                let humanReadableContent = 
+                    chunkData.map {
                         return 32..<126 ~= $0 ? String(UnicodeScalar($0)) : "."
-                        }.joined())
+                    }.joined()
+                let humanReadable = "|\(humanReadableContent)|"
                 return [
                     offsetFormatted,
                     subChunk1Formatted,

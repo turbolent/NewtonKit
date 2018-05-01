@@ -59,7 +59,7 @@ extension NewtonSymbol: CustomStringConvertible {
     public var description: String {
 
         if name.unicodeScalars.first(where: { !CharacterSet.alphanumerics.contains($0) }) != nil {
-            return String(format: "|%@|", name)
+            return "|\(name)|"
         }
 
         return name
