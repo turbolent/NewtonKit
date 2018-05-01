@@ -209,11 +209,23 @@ public class DockBackupLayer {
         try setSoup(soupsProgress: soupsProgress)
     }
 
+    private func isValidSetSoupResponse(packet: DecodableDockPacket) -> Bool {
+        // sometime the Newton just answers with a ResultPacket
+        // instead of a SoupInfoPacket. that's fine, but why?
+        if case let resultPacket as ResultPacket = packet,
+            resultPacket.error == .ok {
+
+            return true
+        }
+
+        // TODO: is there any valuable information in here we should extract?
+        return packet is SoupInfoPacket
+    }
+
     private func handleInSetSoup(packet: DecodableDockPacket,
                                  soupsProgress: SoupsProgress) throws {
 
-        // TODO: is there any valuable information in here we should extract?
-        guard packet is SoupInfoPacket else {
+        guard isValidSetSoupResponse(packet: packet) else {
             try sendError()
             return
         }
