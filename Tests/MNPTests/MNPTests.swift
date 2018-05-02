@@ -6,6 +6,10 @@ import XCTest
 
 class MNPTests: XCTestCase {
 
+    private func dataUnequalMessage(_ lhs: Data, _ rhs: Data) -> String {
+        return "\n\(lhs.hexDump)\n\n\(rhs.hexDump)\n\n"
+    }
+
     func testPacketLayerReadRequest() throws {
 
         let layer = MNPPacketLayer()
@@ -96,7 +100,8 @@ class MNPTests: XCTestCase {
             0xF0, 0xF1, 0xF2, .DLE, .DLE, 0xF3, 0xF4,  // data, with escaped DLE
             0x10, 0x03, 0x2e, 0xc9  // end sequence with CRC
             ])
-        XCTAssertEqual(result as NSData, expected as NSData)
+        XCTAssertEqual(result, expected,
+                       dataUnequalMessage(result, expected))
     }
 
     func testLinkRequestPacket() throws {
@@ -127,9 +132,10 @@ class MNPTests: XCTestCase {
             0x3, 0x1, 0x8,  // max outstanding LT frames = 0x8
             0x4, 0x2, 0x40, 0x0,  // max info length = 64
             0x8, 0x1, 0x3  // max info length 256 enabled, fixed field LT and LA frames enabled
-            ])
+        ])
 
-        XCTAssertEqual(linkRequestPacket.encode(), expectedEncoding)
+        XCTAssertEqual(linkRequestPacket.encode(), expectedEncoding,
+                       dataUnequalMessage(linkRequestPacket.encode(), expectedEncoding))
     }
 
     func testCRC() {

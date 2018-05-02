@@ -55,8 +55,10 @@ public class NewtonObjectEncoder {
 
     public func encode(newtonObject: NewtonObject) -> Data {
         let type = Swift.type(of: newtonObject)
-        if NewtonObjectEncoder.isPrecedentType(type: type) {
-            let identifier = ObjectIdentifier(newtonObject as AnyObject)
+        if NewtonObjectEncoder.isPrecedentType(type: type),
+            let anyNewtonObject = newtonObject as? AnyObject {
+
+            let identifier = ObjectIdentifier(anyNewtonObject)
             if let precedentID = precedents[identifier] {
                 var data = Data(bytes: [NewtonObjectType.precedent.rawValue])
                 data.append(NewtonObjectEncoder.encode(xlong: precedentID))

@@ -1,5 +1,6 @@
 
 import Foundation
+import CoreFoundation
 
 // TODO:
 // From NCX:

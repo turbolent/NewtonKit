@@ -5,6 +5,10 @@ import XCTest
 
 class NSOFTests: XCTestCase {
 
+    private func dataUnequalMessage(_ lhs: Data, _ rhs: Data) -> String {
+        return "\n\(lhs.hexDump)\n\n\(rhs.hexDump)\n\n"
+    }
+
     func testNSOF1() throws {
 
         let data = Data(bytes: [
@@ -70,7 +74,9 @@ class NSOFTests: XCTestCase {
 
         XCTAssertEqual(readCount, data.count)
 
-        XCTAssertEqual(NewtonObjectEncoder.encodeRoot(newtonObject: decoded), data)
+        let encoded = NewtonObjectEncoder.encodeRoot(newtonObject: decoded)
+        XCTAssertEqual(encoded, data,
+                       dataUnequalMessage(encoded, data))
     }
 
     func testNSOF2() throws {
@@ -107,8 +113,13 @@ class NSOFTests: XCTestCase {
                     ] as NewtonFrame
         ]
 
-        XCTAssertEqual(NewtonObjectEncoder.encodeRoot(newtonObject: decoded), data)
-        XCTAssertEqual(NewtonObjectEncoder.encodeRoot(newtonObject: expected), data)
+        let encoded1 = NewtonObjectEncoder.encodeRoot(newtonObject: decoded)
+        XCTAssertEqual(encoded1, data,
+                       dataUnequalMessage(encoded1, data))
+
+        let encoded2 = NewtonObjectEncoder.encodeRoot(newtonObject: expected)
+        XCTAssertEqual(encoded2, data,
+                       dataUnequalMessage(encoded2, data))
     }
 
     func testNSOF3() throws {
@@ -166,9 +177,13 @@ class NSOFTests: XCTestCase {
             "nameAgain": walter
         ]
 
-        XCTAssertEqual(NewtonObjectEncoder.encodeRoot(newtonObject: decoded), data)
-        XCTAssertEqual(NewtonObjectEncoder.encodeRoot(newtonObject: expected), data)
+        let encoded1 = NewtonObjectEncoder.encodeRoot(newtonObject: decoded)
+        XCTAssertEqual(encoded1, data,
+                       dataUnequalMessage(encoded1, data))
 
+        let encoded2 = NewtonObjectEncoder.encodeRoot(newtonObject: expected)
+        XCTAssertEqual(encoded2, data,
+                       dataUnequalMessage(encoded2, data))
     }
 
     static var allTests : [(String, (NSOFTests) -> () throws -> Void)] {
