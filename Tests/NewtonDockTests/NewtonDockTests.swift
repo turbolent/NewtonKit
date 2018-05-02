@@ -5,6 +5,10 @@ import XCTest
 
 class NewtonDockTests: XCTestCase {
 
+    private func dataUnequalMessage(_ lhs: Data, _ rhs: Data) -> String {
+        return "\n\(lhs.hexDump)\n\n\(rhs.hexDump)\n\n"
+    }
+
     func testDockLayerReadRequestToDockPacket() throws {
 
         let initialData = Data(bytes: [
@@ -35,7 +39,10 @@ class NewtonDockTests: XCTestCase {
 
         XCTAssertEqual(packet,
                        RequestToDockPacket(protocolVersion: 9))
-        XCTAssertEqual(try layer.write(packet: packet), initialData)
+
+        let encoded = try layer.write(packet: packet)
+        XCTAssertEqual(encoded, initialData,
+                       dataUnequalMessage(encoded, initialData))
     }
 
     func testDockLayerReadResultPacket() throws {
@@ -68,7 +75,10 @@ class NewtonDockTests: XCTestCase {
 
         XCTAssertEqual(packet,
                        ResultPacket(error: .ok))
-        XCTAssertEqual(try layer.write(packet: packet), initialData)
+
+        let encoded = try layer.write(packet: packet)
+        XCTAssertEqual(encoded, initialData,
+                       dataUnequalMessage(encoded, initialData))
     }
 
     func testDockLayerReadPartial() throws {
