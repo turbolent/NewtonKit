@@ -1,0 +1,18 @@
+language: generic
+matrix:
+  include:
+    - script: swift test
+      os: osx
+      osx_image: xcode9
+    - script: swift test
+      sudo: required
+      dist: trusty
+      before_install:
+        - sudo apt-get -qq update
+        - sudo apt-get install -y libblocksruntime0
+      install:
+        - export SWIFT_VERSION=swift-4.0.3-RELEASE
+        - >
+          curl https://swift.org/builds/swift-4.0.3-release/ubuntu1404/$SWIFT_VERSION/$SWIFT_VERSION-ubuntu14.04.tar.gz
+          | tar xz --directory $HOME --strip-components=1
+        - export PATH=$HOME/usr/bin:$PATH
