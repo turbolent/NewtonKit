@@ -28,3 +28,25 @@ Commands:
 
 
 Currently only Newton OS 2.x devices (MessagePad 130/2000/2100 and eMate) are supported.
+
+
+
+## Development
+
+### Einstein
+
+NewtonKit works with the [Einstein](https://github.com/pguyot/Einstein) Newton OS emulator.
+Make sure to use at least the [pre-release version with serial port emulation](https://github.com/pguyot/Einstein/releases/tag/2017.2.extr).
+
+Once you have Einstein running, use [socat](http://www.dest-unreach.org/socat/) to create a PTY device for the named pipes created by Einstein:
+
+```sh
+socat -d -d PTY,raw,mode=666,echo=0,link=$HOME/einstein \
+    PIPE:$HOME/Library/Application\ Support/Einstein\ Emulator/ExtrSerPortSend\!\!PIPE:$HOME/Library/Application\ Support/Einstein\ Emulator/ExtrSerPortRecv
+```
+
+Then start the NewtonKit command line tool:
+
+```
+swift run $HOME/einstein
+```
