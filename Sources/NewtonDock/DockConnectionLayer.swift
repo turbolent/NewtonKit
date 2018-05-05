@@ -43,6 +43,7 @@ public final class DockConnectionLayer {
     public var onStateChange: ((State, State) -> Void)?
     public var onDisconnect: (() -> Void)?
     public var onWrite: ((EncodableDockPacket) throws -> Void)?
+    public var onCallResult: ((NewtonObject) -> Void)?
 
     public private(set) var state: State = .idle {
         didSet {
@@ -128,6 +129,9 @@ public final class DockConnectionLayer {
             case is RequestToSyncPacket:
                 try backupLayer.handleRequest()
                 state = .backingUp
+            case let callResultPacket as CallResultPacket:
+                onCallResult?(callResultPacket.result)
+                try completeOperation()
             default:
                 break
             }
@@ -181,5 +185,15 @@ public final class DockConnectionLayer {
 
     internal func acknowledgeOperationCanceled() throws {
         try write(packet: OperationCanceledAcknowledgementPacket())
+    }
+
+    public func callGlobalFunction(name: String, arguments: [NewtonObject]) throws {
+        try write(packet: CallGlobalFunctionPacket(name: NewtonSymbol(name: name),
+                                                   arguments: NewtonPlainArray(values: arguments)))
+    }
+
+    public func callRootMethod(name: String, arguments: [NewtonObject]) throws {
+        try write(packet: CallRootMethodPacket(name: NewtonSymbol(name: name),
+                                               arguments: NewtonPlainArray(values: arguments)))
     }
 }

@@ -15,4 +15,5 @@ public protocol DecodableDockPacket {
     init(data: Data) throws
 }
 
+
 public protocol CodableDockPacket: EncodableDockPacket, DecodableDockPacket {}

@@ -14,11 +14,13 @@ final class CommandPrompt {
         case keyboardPassthrough
         case initiatingBackup
         case backingUp
+        case gettingInfo
     }
 
     private enum Command: String {
         case keyboard
         case backup
+        case info
     }
 
 
@@ -31,6 +33,7 @@ final class CommandPrompt {
     init(dockConnectionLayer: DockConnectionLayer) {
         self.dockConnectionLayer = dockConnectionLayer
         dockConnectionLayer.backupLayer.onEntry = handleBackupEntry
+        dockConnectionLayer.onCallResult = onCallResult
     }
 
     private func prompt() -> String? {
@@ -73,6 +76,19 @@ final class CommandPrompt {
         try dockConnectionLayer.startBackup()
     }
 
+    private func getInfo() throws {
+        let dockState = dockConnectionLayer.state
+        guard dockState == .connected else {
+            print("Can't connect in dock connection state: \(dockState)")
+            return
+        }
+
+        state = .gettingInfo
+        try dockConnectionLayer.callGlobalFunction(name: "Gestalt", arguments: [
+            0x1000003 as NewtonInteger
+        ])
+    }
+
     func handleDockConnectionState(state: DockConnectionLayer.State) {
         switch self.state {
         case .idle:
@@ -100,6 +116,8 @@ final class CommandPrompt {
                 print("backup finished\n")
                 self.state = .idle
             }
+        case .gettingInfo:
+            break
         }
     }
 
@@ -118,6 +136,8 @@ final class CommandPrompt {
                         try startKeyboardPassthrough()
                     case .backup:
                         try startBackup()
+                    case .info:
+                        try getInfo()
                     }
                 }
             case .keyboardPassthrough:
@@ -133,6 +153,16 @@ final class CommandPrompt {
     }
 
     private func handleBackupEntry(entry: NewtonFrame) {
+    }
 
+    private func onCallResult(result: NewtonObject) {
+        switch state {
+        case .gettingInfo:
+            print("Info:\n\(result)\n")
+        default:
+            print("Unexpected call result: \(result)")
+        }
+
+        state = .idle
     }
 }

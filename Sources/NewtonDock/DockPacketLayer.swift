@@ -57,7 +57,12 @@ public final class DockPacketLayer {
         SoupNamesPacket.self,
         SoupInfoPacket.self,
         SoupIDsPacket.self,
-        EntryPacket.self
+        EntryPacket.self,
+        CallResultPacket.self
+    ]
+
+    private static let indeterminateLengthCommands: Set<DockCommand> = [
+        .callGlobalFunction, .callRootMethod
     ]
 
     public var onRead: ((DecodableDockPacket) throws -> Void)?
@@ -144,19 +149,26 @@ public final class DockPacketLayer {
     }
 
     public func write(packet: EncodableDockPacket) throws -> Data {
+        let packetType = type(of: packet)
+
         var result = Data()
         result.append(DockPacketLayer.header)
-        result.append(type(of: packet).command.rawValue.data(using: .ascii)!)
+        result.append(packetType.command.rawValue.data(using: .ascii)!)
 
         if let data = packet.encode() {
             let length = UInt32(data.count)
-            result.append(UInt32(length).bigEndianData)
+            if DockPacketLayer.indeterminateLengthCommands.contains(packetType.command) {
+                result.append(contentsOf: [0xFF, 0xFF, 0xFF, 0xFF])
+                result.append(data)
+            } else {
+                result.append(UInt32(length).bigEndianData)
 
-            let roundedLength = DockPacketLayer.roundToBoundary(length: length)
-            result.append(data)
-            let padding = Int(roundedLength - length)
-            if padding != 0 {
-                result.append(Data(repeating: 0, count: padding))
+                let roundedLength = DockPacketLayer.roundToBoundary(length: length)
+                result.append(data)
+                let padding = Int(roundedLength - length)
+                if padding != 0 {
+                    result.append(Data(repeating: 0, count: padding))
+                }
             }
         } else {
             result.append(UInt32(0).bigEndianData)

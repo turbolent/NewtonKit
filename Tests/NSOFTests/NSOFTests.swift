@@ -67,9 +67,9 @@ class NSOFTests: XCTestCase {
 
         guard case let (decoded?, readCount) =
             try NewtonObjectDecoder.decodeRoot(data: data)
-            else {
-                XCTFail("Failed to decode frame")
-                return
+        else {
+            XCTFail("Failed to decode frame")
+            return
         }
 
         XCTAssertEqual(readCount, data.count)
@@ -97,9 +97,9 @@ class NSOFTests: XCTestCase {
 
         guard case let (decoded?, readCount) =
             try NewtonObjectDecoder.decodeRoot(data: data)
-            else {
-                XCTFail("Failed to decode NSOF")
-                return
+        else {
+            XCTFail("Failed to decode NSOF")
+            return
         }
 
         XCTAssertEqual(readCount, data.count)
@@ -149,9 +149,9 @@ class NSOFTests: XCTestCase {
 
         guard case let (decoded?, readCount) =
             try NewtonObjectDecoder.decodeRoot(data: data)
-            else {
-                XCTFail("Failed to decode NSOF")
-                return
+        else {
+            XCTFail("Failed to decode NSOF")
+            return
         }
 
         XCTAssertEqual(readCount, data.count)
