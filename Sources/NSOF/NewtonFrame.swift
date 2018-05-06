@@ -72,6 +72,15 @@ public final class NewtonFrame: NewtonObject {
         }
         return data
     }
+
+    public static func rectangle(top: Int32, left: Int32, bottom: Int32, right: Int32) -> NewtonFrame {
+        return [
+            "top": NewtonInteger(integer: top),
+            "left": NewtonInteger(integer: left),
+            "bottom": NewtonInteger(integer: bottom),
+            "right": NewtonInteger(integer: right)
+        ] as NewtonFrame
+    }
 }
 
 
