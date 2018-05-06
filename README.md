@@ -28,7 +28,7 @@ Commands:
 - `keyboard`: Start keyboard passthrough. Enter `.stop` to stop and return to the command prompt.
 - `info`: Get Newton system information
 - `backup`: Start backup (work in progress)
-
+    - Notes are exported as HTML files to `~/Library/Application Support/Newton/Backups/Notes/`
 
 Currently only Newton OS 2.x devices (MessagePad 130/2000/2100 and eMate) are supported.
 
