@@ -1,3 +1,7 @@
+
+![NewtonKit Logo](https://github.com/turbolent/NewtonKit/raw/master/logo.png)
+
+
 # NewtonKit
 
 [![Build Status](https://travis-ci.org/turbolent/NewtonKit.svg?branch=master)](https://travis-ci.org/turbolent/NewtonKit)
