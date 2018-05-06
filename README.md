@@ -1,5 +1,5 @@
 
-<img src="https://github.com/turbolent/NewtonKit/raw/master/logo.png" width="92" height="87" alt="NewtonKit Logo"/>
+<img src="https://github.com/turbolent/NewtonKit/raw/master/logo.png" width="164" height="154" alt="NewtonKit Logo"/>
 
 ---
 
