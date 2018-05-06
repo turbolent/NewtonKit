@@ -82,7 +82,7 @@ mnpConnectionLayer.onWrite = { packet in
 
 // Command prompt
 
-let commandPrompt = CommandPrompt(dockConnectionLayer: dockConnectionLayer)
+let commandPrompt = try CommandPrompt(dockConnectionLayer: dockConnectionLayer)
 dockConnectionLayer.onStateChange = { _, state in
     switch state {
     case .connected:

@@ -20,7 +20,8 @@ private let noteStyle = """
     box-sizing: border-box;
     font-family: sans-serif;
     font-size: 18px;
-    line-height: 24px
+    line-height: 24px;
+    height: 100%;
   }
   *, *:before, *:after {
     box-sizing: inherit
@@ -31,6 +32,9 @@ private let noteStyle = """
     font-weight: normal;
     font-style: normal;
     border: 0
+  }
+  body {
+    height: 100%
   }
   #content {
     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAA4CAAAAADlHub6AAAAFElEQVQY02P4DwUMo4xhz2BggDMASsm6VFaiatcAAAAASUVORK5CYII=');

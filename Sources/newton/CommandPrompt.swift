@@ -4,6 +4,8 @@ import Foundation
 import NewtonKit
 import NewtonDock
 import NSOF
+import NewtonTranslators
+import Html
 
 
 final class CommandPrompt {
@@ -23,17 +25,38 @@ final class CommandPrompt {
         case info
     }
 
+    private static func defaultBackupPath() throws -> String {
+        var supportDirectoryURL =
+            try FileManager.default.url(for: .applicationSupportDirectory,
+                                        in: .userDomainMask,
+                                        appropriateFor: nil,
+                                        create: true)
+        supportDirectoryURL.appendPathComponent("Newton", isDirectory: true)
+        supportDirectoryURL.appendPathComponent("Backups", isDirectory: true)
+        return supportDirectoryURL.path
+    }
 
     private(set) var started = false
 
     private var state: State = .idle
 
     private let dockConnectionLayer: DockConnectionLayer
+    private let backupPath: String
 
-    init(dockConnectionLayer: DockConnectionLayer) {
+    init(dockConnectionLayer: DockConnectionLayer,
+         backupPath: String? = nil) throws {
+
         self.dockConnectionLayer = dockConnectionLayer
+        self.backupPath = try backupPath ?? CommandPrompt.defaultBackupPath()
+        try createDirectory(path: self.backupPath)
         dockConnectionLayer.backupLayer.onEntry = handleBackupEntry
         dockConnectionLayer.onCallResult = onCallResult
+    }
+
+    private func createDirectory(path: String) throws {
+        try FileManager.default.createDirectory(atPath: path,
+                                                withIntermediateDirectories: true,
+                                                attributes: nil)
     }
 
     private func prompt() -> String? {
@@ -152,7 +175,27 @@ final class CommandPrompt {
         }
     }
 
-    private func handleBackupEntry(entry: NewtonFrame) {
+    private func backupFileURL(application: String, filename: String) throws -> URL {
+        let applicationURL = URL(fileURLWithPath: backupPath)
+            .appendingPathComponent(application, isDirectory: true)
+        try createDirectory(path: applicationURL.path)
+        return applicationURL.appendingPathComponent(filename)
+    }
+
+    private func handleBackupEntry(entry: NewtonFrame) throws {
+        guard let uniqueID = (entry["_uniqueID"] as? NewtonInteger)
+            .map({ String($0.integer) })
+        else {
+            print("Skipping entry without unique ID")
+            return
+        }
+
+        if case "paperroll" as NewtonSymbol = entry["viewStationery"] {
+            let document = translateToHtmlDocument(paperroll: entry)
+            let html = render(document, config: pretty)
+            let url = try backupFileURL(application: "Notes", filename: "\(uniqueID).html")
+            try html.write(to: url, atomically: true, encoding: .utf8)
+        }
     }
 
     private func onCallResult(result: NewtonObject) {

@@ -48,7 +48,7 @@ public class DockBackupLayer {
 
     internal weak var connectionLayer: DockConnectionLayer!
 
-    public var onEntry: ((NewtonFrame) -> Void)?
+    public var onEntry: ((NewtonFrame) throws -> Void)?
 
     private var state: State = .inactive
 
@@ -266,7 +266,7 @@ public class DockBackupLayer {
             return
         }
 
-        onEntry?(entryPacket.entry)
+        try onEntry?(entryPacket.entry)
 
         try requestNextEntry(soupProgress: soupProgress)
     }
