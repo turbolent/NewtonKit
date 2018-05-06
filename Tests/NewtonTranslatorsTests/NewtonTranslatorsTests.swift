@@ -29,8 +29,8 @@ class NewtonTranslatorsTests: XCTestCase {
                         "viewStationery": "para" as NewtonSymbol,
                         "viewBounds": NewtonSmallRect(top: 7, left: 10, bottom: 85, right: 123),
                         "text": "This is a test\r\r" as NewtonString
-                        ] as NewtonFrame,
-                    ] as NewtonPlainArray,
+                    ] as NewtonFrame,
+                ] as NewtonPlainArray,
                 "timestamp": 48661260 as NewtonInteger,
                 "_version": 2 as NewtonInteger,
                 "_modTime": 48661411 as NewtonInteger,

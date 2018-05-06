@@ -15,38 +15,75 @@ fileprivate extension NewtonSymbol {
 }
 
 
+private let noteStyle = """
+  html {
+    box-sizing: border-box;
+    font-family: sans-serif;
+    font-size: 18px;
+    line-height: 24px
+  }
+  *, *:before, *:after {
+    box-sizing: inherit
+  }
+  * {
+    margin: 0;
+    padding: 0;
+    font-weight: normal;
+    font-style: normal;
+    border: 0
+  }
+  #content {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAA4CAAAAADlHub6AAAAFElEQVQY02P4DwUMo4xhz2BggDMASsm6VFaiatcAAAAASUVORK5CYII=');
+    background-size: 4px 28px;
+    margin-top: 2px;
+    min-height: 100%;
+  }
+"""
+
+
 public func translateToHtmlDocument(paperroll: NewtonFrame) -> Node {
     let dataValues = (paperroll["data"] as? NewtonPlainArray)?.values ?? []
+
+    let nodesAndDimensions =
+        dataValues
+            .flatMap(translateToHtmlNode)
+            .sorted { (left, right) -> Bool in
+                let (_, d1) = left
+                let (_, d2) = right
+                if d1.top > d2.top {
+                    return false
+                }
+
+                if d1.left > d2.left {
+                    return false
+                }
+
+                return true
+            }
+
+    let height = nodesAndDimensions
+        .map { $0.1.bottom }
+        .max() ?? 0
 
     return document([
         html([
             head([
-                style("""
-                    html {
-                            box-sizing: border-box;
-                            font-size: 18px;
-                            line-height: 24px
-                          }
-                          *, *:before, *:after {
-                            box-sizing: inherit
-                          }
-                          * {
-                            margin: 0;
-                            padding: 0;
-                            font-weight: normal;
-                            font-style: normal;
-                            border: 0
-                          }
-                    """),
+                style(noteStyle),
                 title("")
             ]),
-            body(dataValues.flatMap(translateToHtmlNode))
+            body([
+                div([
+                        style("height: \(height)px"),
+                        id("content")
+                    ],
+                    nodesAndDimensions.map { $0.0 })
+            ])
         ])
     ])
 }
 
 
-public func translateToHtmlNode(paperrollDataObject: NewtonObject) -> Node? {
+public func translateToHtmlNode(paperrollDataObject: NewtonObject) -> (Node, Dimensions)? {
 
     guard
         let frame = paperrollDataObject as? NewtonFrame,
@@ -65,11 +102,11 @@ public func translateToHtmlNode(paperrollDataObject: NewtonObject) -> Node? {
 
 
 // TODO:
-// - escape test
+// - escape text
 // - spaces to &nbsp;
 // - translate \r to <br>
 
-public func translateToHtmlNode(paraFrame: NewtonFrame) -> Node? {
+public func translateToHtmlNode(paraFrame: NewtonFrame) -> (Node, Dimensions)? {
 
     guard
         let text = (paraFrame["text"] as? NewtonString)?.string,
@@ -92,7 +129,8 @@ public func translateToHtmlNode(paraFrame: NewtonFrame) -> Node? {
             style(styleAttribute)
         ], [
             Html.text(text)
-        ])
+        ]),
+        dimensions
     )
 }
 
