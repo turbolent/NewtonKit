@@ -1,5 +1,6 @@
 import Html
 import NSOF
+import Foundation
 
 
 public struct Dimensions {
@@ -105,11 +106,6 @@ public func translateToHtmlNode(paperrollDataObject: NewtonObject) -> (Node, Dim
 }
 
 
-// TODO:
-// - escape text
-// - spaces to &nbsp;
-// - translate \r to <br>
-
 public func translateToHtmlNode(paraFrame: NewtonFrame) -> (Node, Dimensions)? {
 
     guard
@@ -120,19 +116,28 @@ public func translateToHtmlNode(paraFrame: NewtonFrame) -> (Node, Dimensions)? {
         return nil
     }
 
+    let left = dimensions.left
+    let width = dimensions.right - left
+    let top = dimensions.top
+    let height = dimensions.bottom - top
+
     let styleAttribute = [
         "position: absolute",
-        "left: \(dimensions.left)px",
-        "width: \(dimensions.right - dimensions.left)px",
-        "top: \(dimensions.top)px",
-        "height: \(dimensions.bottom - dimensions.top)px"
+        "left: \(left)px",
+        "width: \(width)px",
+        "top: \(top)px",
+        "height: \(height)px"
     ].joined(separator: "; ")
+
+    let encoded = encode(text).string
+        .replacingOccurrences(of: "\r", with: "<br>")
+        .replacingOccurrences(of: " ", with: "&nbsp;")
 
     return (
         p([
             style(styleAttribute)
         ], [
-            Html.text(text)
+            .text(unsafeUnencodedString(encoded))
         ]),
         dimensions
     )
