@@ -18,13 +18,6 @@ private struct SoupsProgress {
     let storesProgress: StoresProgress
 }
 
-private struct SoupProgress {
-    let current: UInt32
-    let remaining: [UInt32]
-    let soupsProgress: SoupsProgress
-}
-
-
 public class DockBackupLayer {
 
     public enum Error: Swift.Error {
@@ -40,8 +33,7 @@ public class DockBackupLayer {
         case requestedSyncOptions
         case setStore(StoresProgress)
         case setSoup(SoupsProgress)
-        case requestedSoupIDs(SoupsProgress)
-        case requestedEntry(SoupProgress)
+        case requestedSoup(SoupsProgress)
     }
 
     private static let supportedSoups = ["Notes", "Calendar"]
@@ -113,12 +105,9 @@ public class DockBackupLayer {
         case let .setSoup(soupsProgress):
             try handleInSetSoup(packet: packet,
                                 soupsProgress: soupsProgress)
-        case let .requestedSoupIDs(soupsProgress):
-            try handleInRequestedSoupIDs(packet: packet,
-                                         soupsProgress: soupsProgress)
-        case let .requestedEntry(soupProgress):
-            try handleInRequestedEntry(packet: packet,
-                                       soupProgress: soupProgress)
+        case let .requestedSoup(soupsProgress):
+            try handleInRequestedSoup(packet: packet,
+                                      soupsProgress: soupsProgress)
         }
     }
 
@@ -233,42 +222,20 @@ public class DockBackupLayer {
             return
         }
 
-        try requestSoupIDs(soupsProgress: soupsProgress)
+        try requestSoup(soupsProgress: soupsProgress)
     }
 
-    private func handleInRequestedSoupIDs(packet: DecodableDockPacket,
-                                          soupsProgress: SoupsProgress) throws {
+    private func handleInRequestedSoup(packet: DecodableDockPacket,
+                                       soupsProgress: SoupsProgress) throws {
 
-        guard let soupIDsPacket = packet as? SoupIDsPacket else {
-            try sendError()
-            return
-        }
-
-        guard let entry = soupIDsPacket.ids.first else {
+        switch packet {
+        case let entryPacket as EntryPacket:
+            try onEntry?(entryPacket.entry)
+        case is BackupSoupDonePacket:
             try requestNextSoup(soupsProgress: soupsProgress)
-            return
-        }
-
-
-        let soupProgress =
-            SoupProgress(current: entry,
-                         remaining: Array(soupIDsPacket.ids.dropFirst()),
-                         soupsProgress: soupsProgress)
-
-        try requestEntry(soupProgress: soupProgress)
-    }
-
-    private func handleInRequestedEntry(packet: DecodableDockPacket,
-                                        soupProgress: SoupProgress) throws {
-
-        guard let entryPacket = packet as? EntryPacket else {
+        default:
             try sendError()
-            return
         }
-
-        try onEntry?(entryPacket.entry)
-
-        try requestNextEntry(soupProgress: soupProgress)
     }
 
     private func decodeStores(syncOptionsPacket: SyncOptionsPacket) throws -> [NewtonFrame] {
@@ -318,17 +285,10 @@ public class DockBackupLayer {
         state = .setSoup(soupsProgress)
     }
 
-    private func requestSoupIDs(soupsProgress: SoupsProgress) throws {
-        try write(packet: GetSoupIDsPacket())
+    private func requestSoup(soupsProgress: SoupsProgress) throws {
+        try write(packet: SendSoupPacket())
 
-        state = .requestedSoupIDs(soupsProgress)
-    }
-
-    private func requestEntry(soupProgress: SoupProgress) throws {
-
-        try write(packet: ReturnEntryPacket(id: soupProgress.current))
-
-        state = .requestedEntry(soupProgress)
+        state = .requestedSoup(soupsProgress)
     }
 
     private func requestNextStore(storesProgress: StoresProgress) throws {
@@ -359,20 +319,6 @@ public class DockBackupLayer {
                           remaining: Array(soupsProgress.remaining.dropFirst()),
                           storesProgress: soupsProgress.storesProgress)
         try setSoup(soupsProgress: soupsProgress)
-    }
-
-    private func requestNextEntry(soupProgress: SoupProgress) throws {
-
-        guard let next = soupProgress.remaining.first else {
-            try requestNextSoup(soupsProgress: soupProgress.soupsProgress)
-            return
-        }
-
-        let soupProgress =
-            SoupProgress(current: next,
-                         remaining: Array(soupProgress.remaining.dropFirst()),
-                         soupsProgress: soupProgress.soupsProgress)
-        try requestEntry(soupProgress: soupProgress)
     }
 
     public func stop() throws {
