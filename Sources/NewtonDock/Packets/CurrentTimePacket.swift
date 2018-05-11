@@ -33,9 +33,6 @@ public struct CurrentTimePacket: DecodableDockPacket {
         guard let minutesSince1904 = UInt32(bigEndianData: data) else {
             throw DecodingError.invalidDate
         }
-        date = Date(timeIntervalSinceReferenceDate:
-            -kCFAbsoluteTimeIntervalSince1904
-            + Double(minutesSince1904) * 60.0
-        )
+        date = Date(minutesSince1904: Int(minutesSince1904))
     }
 }
