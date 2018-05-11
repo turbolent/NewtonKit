@@ -1,5 +1,6 @@
 
 import Foundation
+import CoreFoundation
 
 public extension Date {
     init(minutesSince1904: Int) {
