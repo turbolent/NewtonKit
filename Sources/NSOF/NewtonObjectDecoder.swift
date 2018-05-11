@@ -66,7 +66,7 @@ public class NewtonObjectDecoder {
 
     private func recordPrecedent() -> Int {
         // temporary, will be patched in updatePrecedent
-        precedents.append(NewtonNil.`nil`)
+        precedents.append(NewtonNil.nil)
         return precedents.count - 1
     }
 
@@ -163,7 +163,7 @@ public class NewtonObjectDecoder {
             } else if NewtonTrue.isTrue(immediate: immediate) {
                 return try NewtonTrue.decode(decoder: self)
             } else if NewtonNil.isNil(immediate: immediate) {
-                return NewtonNil.`nil`
+                return NewtonNil.nil
             } else if NewtonCharacter.isCharacter(immediate: immediate) {
                 return try NewtonCharacter.decodeImmediate(decoder: self)
             } else if NewtonMagicPointer.isMagicPointer(immediate: immediate) {
@@ -171,8 +171,8 @@ public class NewtonObjectDecoder {
             } else {
                 throw DecodingError.invalidImmediate
             }
-        case .`nil`:
-            return NewtonNil.`nil`
+        case .nil:
+            return NewtonNil.nil
         default:
             guard let swiftType = type.swiftType else {
                 throw DecodingError.unsupportedType

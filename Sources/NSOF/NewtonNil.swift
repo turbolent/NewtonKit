@@ -13,11 +13,11 @@ public struct NewtonNil: NewtonObject {
     }
 
     public static func decode(decoder: NewtonObjectDecoder) throws -> NewtonNil {
-        return NewtonNil.`nil`
+        return NewtonNil.nil
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
-        return Data(bytes: [NewtonObjectType.`nil`.rawValue])
+        return Data(bytes: [NewtonObjectType.nil.rawValue])
     }
 }
 
