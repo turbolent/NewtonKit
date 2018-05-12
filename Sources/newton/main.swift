@@ -29,6 +29,10 @@ serialPort.onRead = { data in
     try mnpPacketLayer.read(data: data)
 }
 
+serialPort.onCancel = { error in
+    fatalError("Serial port encountered error: \(error)")
+}
+
 mnpPacketLayer.onRead = { packet in
 
     if debugMNP {
@@ -76,7 +80,7 @@ mnpConnectionLayer.onWrite = { packet in
 
     let encoded = packet.encode()
     let framed = mnpPacketLayer.write(data: encoded)
-    try? serialPort.write(data: framed)
+    try serialPort.write(data: framed)
 }
 
 

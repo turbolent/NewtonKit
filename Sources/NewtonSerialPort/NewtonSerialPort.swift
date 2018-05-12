@@ -98,7 +98,7 @@ public final class NewtonSerialPort {
     private var source: DispatchSourceRead?
 
     public var onRead: ((Data) throws -> Void)?
-    public var onCancel: (() -> Void)?
+    public var onCancel: ((Swift.Error?) -> Void)?
 
     public let path: String
 
@@ -171,14 +171,15 @@ public final class NewtonSerialPort {
             }
 
             try onRead?(data)
-        } catch {
-//            try? close()
+        } catch let error {
+            try? close()
+            onCancel?(error)
         }
     }
 
     private func handleReadCancellation() {
         try? close()
-        onCancel?()
+        onCancel?(nil)
     }
 
     public func startReading() throws {

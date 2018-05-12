@@ -29,7 +29,7 @@ public final class MNPConnectionLayer {
         }
     }
 
-    public var onWrite: ((MNPPacket) -> Void)?
+    public var onWrite: ((MNPPacket) throws -> Void)?
     public var onRead: ((Data) throws -> Void)?
     public var onClose: ((MNPLinkDisconnectPacket.Reason?) -> Void)?
 
@@ -169,7 +169,7 @@ public final class MNPConnectionLayer {
         case .idle:
             if let linkRequest = packet as? MNPLinkRequestPacket {
                 state = .establishmentPhase
-                handleIdle(linkRequest: linkRequest)
+                try handleIdle(linkRequest: linkRequest)
             }
 
         // [...] When an acknowledgement LA is received, the responder enters the
@@ -204,10 +204,10 @@ public final class MNPConnectionLayer {
 
             case is MNPLinkRequestPacket:
                 if resentLinkResponse {
-                    disconnect(reason: .protocolEstablishmentPhaseError)
+                    try disconnect(reason: .protocolEstablishmentPhaseError)
                 } else if let linkResponse = linkResponse {
                     // TODO: restart T401 timer waiting for LA
-                    write(packet: linkResponse)
+                    try write(packet: linkResponse)
                     resentLinkResponse = true
                 }
             default:
@@ -220,7 +220,7 @@ public final class MNPConnectionLayer {
                 // the error-corrected connection. After sending the LD, the error-correcting
                 // entity shall terminate the physical connection.
 
-                disconnect(reason: .protocolEstablishmentPhaseError)
+                try disconnect(reason: .protocolEstablishmentPhaseError)
             }
 
         // A.7.3 Data phase procedures
@@ -303,11 +303,11 @@ public final class MNPConnectionLayer {
     // When the responder sends its response LR, it includes only those parameters which it both
     // received and understood.
 
-    private func handleIdle(linkRequest: MNPLinkRequestPacket) {
+    private func handleIdle(linkRequest: MNPLinkRequestPacket) throws {
 
         // ensure constant parameter 1 is correct.
         guard !linkRequest.validationErrors.contains(.invalidConstantParameter1) else {
-            disconnect(reason: .unexpectedLRConstantParameter1)
+            try disconnect(reason: .unexpectedLRConstantParameter1)
             return
         }
 
@@ -318,7 +318,7 @@ public final class MNPConnectionLayer {
             linkRequest.framingMode == .startStopOctetOriented,
             linkRequest.fixedFieldLTAndLAFrames
         else {
-            disconnect(reason: .incompatibleOrUnknownLRParameterValue)
+            try disconnect(reason: .incompatibleOrUnknownLRParameterValue)
             return
         }
 
@@ -341,11 +341,11 @@ public final class MNPConnectionLayer {
         maxOutstandingLTFrameCount =
             linkRequest.maxOutstandingLTFrameCount
 
-        sendLinkResponse(linkRequest: linkRequest)
+        try sendLinkResponse(linkRequest: linkRequest)
     }
 
 
-    private func sendLinkResponse(linkRequest: MNPLinkRequestPacket) {
+    private func sendLinkResponse(linkRequest: MNPLinkRequestPacket) throws {
         // create a new packet, to ensure correct constant parameters are encoded
         let linkResponse =
             MNPLinkRequestPacket(framingMode: linkRequest.framingMode,
@@ -357,7 +357,7 @@ public final class MNPConnectionLayer {
 
         self.linkResponse = linkResponse
 
-        write(packet: linkResponse)
+        try write(packet: linkResponse)
     }
 
 
@@ -504,9 +504,9 @@ public final class MNPConnectionLayer {
             // TODO: stop timer T401
         }
 
-        // TODO: subtract unacknowledgedPacketCount
         sendCredit =
-            linkAcknowledgement.receiveCreditNumber - unacknowledgedTransferPacketCount
+            linkAcknowledgement.receiveCreditNumber
+            - unacknowledgedTransferPacketCount
     }
 
 
@@ -543,8 +543,8 @@ public final class MNPConnectionLayer {
 
         let receiveCreditNumber = receiveCredit
 
-        write(packet: MNPLinkAcknowledgementPacket(receiveSequenceNumber: receiveSequenceNumber,
-                                                   receiveCreditNumber: receiveCreditNumber))
+        try write(packet: MNPLinkAcknowledgementPacket(receiveSequenceNumber: receiveSequenceNumber,
+                                                       receiveCreditNumber: receiveCreditNumber))
 
         // TODO: restart T404
     }
@@ -592,8 +592,8 @@ public final class MNPConnectionLayer {
 
         let sendSequenceNumber = sendState
 
-        write(packet: MNPLinkTransferPacket(sendSequenceNumber: sendSequenceNumber,
-                                            information: data))
+        try write(packet: MNPLinkTransferPacket(sendSequenceNumber: sendSequenceNumber,
+                                                information: data))
 
         incrementSendState()
         decrementSendCredit()
@@ -602,15 +602,16 @@ public final class MNPConnectionLayer {
     }
 
     public func write(data: Data) throws {
-        for information in data.chunk(n: Int(maxInfoLength)) {
-            try sendLinkTransfer(data: information)
+        let chunks = data.chunk(n: Int(maxInfoLength))
+        for chunk in chunks {
+            try sendLinkTransfer(data: chunk)
         }
     }
 
-    private func write(packet: MNPPacket) {
+    private func write(packet: MNPPacket) throws {
 
         // TODO:
-        onWrite?(packet)
+        try onWrite?(packet)
     }
 
 
@@ -626,12 +627,12 @@ public final class MNPConnectionLayer {
     // connection. It is recommended that the LD frame not be sent in order to promote
     // proper interworking with the installed base of error-correcting DCEs.
 
-    public func disconnect() {
-        disconnect(reason: .userInitiatedDisconnect)
+    public func disconnect() throws {
+        try disconnect(reason: .userInitiatedDisconnect)
     }
 
-    private func disconnect(reason: MNPLinkDisconnectPacket.Reason) {
-        write(packet: MNPLinkDisconnectPacket(reason: reason))
+    private func disconnect(reason: MNPLinkDisconnectPacket.Reason) throws {
+        try write(packet: MNPLinkDisconnectPacket(reason: reason))
         close(reason: reason)
     }
 
