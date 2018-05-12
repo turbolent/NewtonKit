@@ -498,7 +498,7 @@ public final class MNPConnectionLayer {
     private func handleDataPhase(linkAcknowledgement: MNPLinkAcknowledgementPacket) throws {
 
         unacknowledgedTransferPacketCount =
-            sendState - linkAcknowledgement.receiveSequenceNumber
+            sendState &- linkAcknowledgement.receiveSequenceNumber
 
         if unacknowledgedTransferPacketCount > 0 {
             // TODO: restart timer T401
