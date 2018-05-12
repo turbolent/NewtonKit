@@ -59,7 +59,9 @@ public final class DockPacketLayer {
         SoupIDsPacket.self,
         EntryPacket.self,
         CallResultPacket.self,
-        BackupSoupDonePacket.self
+        BackupSoupDonePacket.self,
+        ChangedEntryPacket.self,
+        AddedIDPacket.self
     ]
 
     private static let indeterminateLengthCommands: Set<DockCommand> = [
