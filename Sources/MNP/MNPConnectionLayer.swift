@@ -125,6 +125,8 @@ public final class MNPConnectionLayer {
 
     private var unacknowledgedTransferPacketCount: UInt8 = 0
 
+    // TODO: optimize
+    private var queuedData: [Data] = []
 
     public init() {}
 
@@ -507,6 +509,12 @@ public final class MNPConnectionLayer {
         sendCredit =
             linkAcknowledgement.receiveCreditNumber
             - unacknowledgedTransferPacketCount
+
+        // send outstanding data
+        if sendCredit > 0 && !queuedData.isEmpty {
+            let data = queuedData.removeFirst()
+            try sendLinkTransfer(data: data)
+        }
     }
 
 
@@ -604,7 +612,11 @@ public final class MNPConnectionLayer {
     public func write(data: Data) throws {
         let chunks = data.chunk(n: Int(maxInfoLength))
         for chunk in chunks {
-            try sendLinkTransfer(data: chunk)
+            if sendCredit > 0 {
+                try sendLinkTransfer(data: chunk)
+            } else {
+                queuedData.append(chunk)
+            }
         }
     }
 
