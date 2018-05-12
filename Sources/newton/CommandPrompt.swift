@@ -17,12 +17,14 @@ final class CommandPrompt {
         case initiatingBackup
         case backingUp
         case gettingInfo
+        case loadingPackage
     }
 
     private enum Command: String {
         case keyboard
         case backup
         case info
+        case load
     }
 
     private static func defaultBackupPath() throws -> String {
@@ -51,6 +53,7 @@ final class CommandPrompt {
         try createDirectory(path: self.backupPath)
         dockConnectionLayer.backupLayer.onEntry = handleBackupEntry
         dockConnectionLayer.onCallResult = onCallResult
+        dockConnectionLayer.packageLayer.onResult = onPackageLoadingResult
     }
 
     private func createDirectory(path: String) throws {
@@ -112,6 +115,22 @@ final class CommandPrompt {
         ])
     }
 
+    private func loadPackage(atPath path: String) throws {
+        let dockState = dockConnectionLayer.state
+        guard dockState == .connected else {
+            print("Can't connect in dock connection state: \(dockState)")
+            return
+        }
+
+        guard let data = FileManager.default.contents(atPath: path) else {
+            print("Can't load package at path: \(path)")
+            return
+        }
+
+        state = .loadingPackage
+        try dockConnectionLayer.loadPackage(data: data)
+    }
+
     func handleDockConnectionState(state: DockConnectionLayer.State) {
         switch self.state {
         case .idle:
@@ -141,6 +160,12 @@ final class CommandPrompt {
             }
         case .gettingInfo:
             break
+        case .loadingPackage:
+            if state == .connected {
+                print("package loading stopped")
+                self.state = .idle
+            }
+            break
         }
     }
 
@@ -153,7 +178,10 @@ final class CommandPrompt {
 
             switch state {
             case .idle:
-                if let command = Command(rawValue: line) {
+                let parts = line.split(separator: " ", maxSplits: 1)
+                if let firstPart = parts.first,
+                    let command = Command(rawValue: String(firstPart)) {
+
                     switch command {
                     case .keyboard:
                         try startKeyboardPassthrough()
@@ -161,6 +189,13 @@ final class CommandPrompt {
                         try startBackup()
                     case .info:
                         try getInfo()
+                    case .load:
+                        guard parts.count > 1 else {
+                            print("Missing path")
+                            break
+                        }
+                        let path = String(parts[1])
+                        try loadPackage(atPath: path)
                     }
                 }
             case .keyboardPassthrough:
@@ -206,6 +241,15 @@ final class CommandPrompt {
             print("Unexpected call result: \(result)")
         }
 
+        state = .idle
+    }
+
+    private func onPackageLoadingResult(successful: Bool) {
+        if successful {
+            print("package loading finished")
+        } else {
+            print("package loading failed")
+        }
         state = .idle
     }
 }

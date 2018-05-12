@@ -14,6 +14,7 @@ public final class DockConnectionLayer {
         case connected
         case keyboardPassthrough
         case backingUp
+        case loadingPackage
         case disconnected
     }
 
@@ -22,6 +23,7 @@ public final class DockConnectionLayer {
         case missingNewtonKey
         case newtonKeyEnryptionKeyFailed
         case notConnected
+        case loadingPackage
     }
 
     private static let timeout: UInt32 = 60
@@ -56,11 +58,13 @@ public final class DockConnectionLayer {
 
     public let keyboardPassthroughLayer = DockKeyboardPassthroughLayer()
     public let backupLayer = DockBackupLayer()
+    public let packageLayer = DockPackageLayer()
 
     public init() throws {
         des = try DES(keyBytes: DockConnectionLayer.desKey)
         keyboardPassthroughLayer.connectionLayer = self
         backupLayer.connectionLayer = self
+        packageLayer.connectionLayer = self
     }
 
     public func read(packet: DecodableDockPacket) throws {
@@ -71,6 +75,7 @@ public final class DockConnectionLayer {
             state = .disconnected
             keyboardPassthroughLayer.handleDisconnect()
             backupLayer.handleDisconnect()
+            packageLayer.handleDisconnect()
             onDisconnect?()
             return
         }
@@ -135,6 +140,8 @@ public final class DockConnectionLayer {
             default:
                 break
             }
+        case .loadingPackage:
+            try packageLayer.read(packet: packet)
         case .keyboardPassthrough:
             try keyboardPassthroughLayer.read(packet: packet)
         case .backingUp:
@@ -178,6 +185,19 @@ public final class DockConnectionLayer {
 
         try backupLayer.start()
         state = .backingUp
+    }
+
+    public func loadPackage(data: Data) throws {
+        guard state != .loadingPackage else {
+            throw Error.loadingPackage
+        }
+
+        guard state == .connected else {
+            throw Error.notConnected
+        }
+
+        try packageLayer.start(package: data)
+        state = .loadingPackage
     }
 
     internal func startDesktopControl() throws {
