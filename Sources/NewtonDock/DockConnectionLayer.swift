@@ -148,6 +148,12 @@ public final class DockConnectionLayer {
         try onWrite?(packet)
     }
 
+    internal func sendError() throws {
+        // TODO: or protocolError?
+        try write(packet: ResultPacket(error: .desktopError))
+        state = .idle
+    }
+
     public func startKeyboardPassthrough() throws {
         if state == .keyboardPassthrough {
             return
@@ -185,6 +191,7 @@ public final class DockConnectionLayer {
 
     internal func acknowledgeOperationCanceled() throws {
         try write(packet: OperationCanceledAcknowledgementPacket())
+        state = .connected
     }
 
     public func callGlobalFunction(name: String, arguments: [NewtonObject]) throws {

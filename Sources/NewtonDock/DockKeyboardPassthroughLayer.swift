@@ -42,7 +42,7 @@ public class DockKeyboardPassthroughLayer {
         state = .active
     }
 
-    public func handleDisconnect() {
+    internal func handleDisconnect() {
         state = .inactive
     }
 

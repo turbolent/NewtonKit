@@ -70,13 +70,12 @@ public class DockBackupLayer {
         state = .requestedSyncOptions
     }
 
-    public func handleDisconnect() {
+    internal func handleDisconnect() {
         state = .inactive
     }
 
     private func sendError() throws {
-        // TODO: or protocolError?
-        try write(packet: ResultPacket(error: .desktopError))
+        try connectionLayer.sendError()
         state = .inactive
     }
 
