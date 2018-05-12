@@ -29,9 +29,9 @@ Commands:
 - `info`: Get Newton system information
 - `backup`: Start backup (work in progress)
     - Notes are exported as HTML files to `~/Library/Application Support/Newton/Backups/Notes/`
+- `load <path>`: Install the package at the given path
 
 Currently only Newton OS 2.x devices (MessagePad 130/2000/2100 and eMate) are supported.
-
 
 
 ## Development
