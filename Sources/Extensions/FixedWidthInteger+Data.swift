@@ -1,5 +1,10 @@
 import Foundation
 
+// TODO:
+// Unsure if the pointers in the closures passed to withUnsafeBytes
+// need to be rebound:
+// `UnsafeRawPointer($0).bindMemory(to: Self.self, capacity: 1)`
+
 public extension FixedWidthInteger {
 
     init?(littleEndianData data: Data) {
