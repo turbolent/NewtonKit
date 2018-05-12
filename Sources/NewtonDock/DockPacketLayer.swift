@@ -142,11 +142,8 @@ public final class DockPacketLayer {
         return try commands[command]?.init(data: data)
     }
 
-    private static func roundToBoundary(length: UInt32) -> UInt32 {
-        let boundary = UInt32(DockPacketLayer.boundary)
-        let remainder = length % boundary
-        let padding = boundary - remainder
-        return length + (remainder != 0 ? padding : 0)
+    public static func roundToBoundary(length: UInt32) -> UInt32 {
+        return length.roundTowards(boundary: UInt32(DockPacketLayer.boundary))
     }
 
     public func write(packet: EncodableDockPacket) throws -> Data {
