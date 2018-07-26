@@ -23,15 +23,26 @@ internal extension io_object_t {
 
 public class DarwinSerialPorts: SerialPorts {
 
-    private var iterator: io_iterator_t = 0
+    public enum Error: Swift.Error {
+        case matchingFailed
+    }
 
-    public init?() {
-        let matching = IOServiceMatching(kIOSerialBSDServiceValue) as NSMutableDictionary
-        matching[kIOSerialBSDTypeKey] = kIOSerialBSDRS232Type
-        let result = IOServiceGetMatchingServices(kIOMasterPortDefault, matching, &iterator)
+    private var iterator: io_iterator_t
+    private let release: Bool
+
+    public convenience init() throws {
+        var iterator: io_iterator_t = 0
+
+        let result = IOServiceGetMatchingServices(kIOMasterPortDefault, serialPortMatching, &iterator)
         guard result == KERN_SUCCESS else {
-            return nil
+            throw Error.matchingFailed
         }
+        self.init(iterator: iterator, release: true)
+    }
+
+    public init(iterator: io_iterator_t, release: Bool) {
+        self.iterator = iterator
+        self.release = release
     }
 
     public func next() -> SerialPort? {
@@ -39,20 +50,17 @@ public class DarwinSerialPorts: SerialPorts {
             return nil
         }
 
-        guard let calloutDevice = service[kIOCalloutDeviceKey] as String? else {
-            return nil
+        defer {
+            IOObjectRelease(service)
         }
 
-        return SerialPort(
-            calloutDevice: calloutDevice,
-            usbVendorName: service.getParentProperty(key: "USB Vendor Name"),
-            usbProductName: service.getParentProperty(key: "USB Product Name"),
-            usbSerialNumber: service.getParentProperty(key: "USB Serial Number")
-        )
+        return SerialPort(service: service)
     }
 
     deinit {
-        IOObjectRelease(iterator)
+        if release {
+            IOObjectRelease(iterator)
+        }
     }
 }
 
