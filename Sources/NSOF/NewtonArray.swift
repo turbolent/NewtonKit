@@ -10,7 +10,10 @@ public final class NewtonArray: NewtonObject {
         case invalidValue
     }
 
+    /// Class (object)
     public let `class`: NewtonObject
+
+    /// Slot tags in ascending order (symbol objects)
     public let values: [NewtonObject]
 
     public static func decode(decoder: NewtonObjectDecoder) throws -> NewtonArray {

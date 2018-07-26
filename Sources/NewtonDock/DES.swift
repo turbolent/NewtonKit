@@ -1,8 +1,8 @@
 
 import Foundation
 
-// Used in the key schedule to select 56 bits
-// from a 64-bit input
+
+/// Used in the key schedule to select 56 bits from a 64-bit input
 
 private let permutedChoice1: [UInt8] = [
     7, 15, 23, 31, 39, 47, 55, 63,
@@ -14,8 +14,8 @@ private let permutedChoice1: [UInt8] = [
     35, 43, 51, 59, 36, 44, 52, 60,
 ]
 
-// Used in the key schedule to produce each subkey
-// by selecting 48 bits from the 56-bit input
+
+/// Used in the key schedule to produce each subkey by selecting 48 bits from the 56-bit input
 
 private let permutedChoice2: [UInt8] = [
     42, 39, 45, 32, 55, 51, 53, 28,
@@ -42,12 +42,14 @@ public enum DESError: Error {
 }
 
 
-// Size of left rotation per round in each half of the key schedule
+/// Size of left rotation per round in each half of the key schedule
+
 private let ksRotations: [UInt8] =
     [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1]
 
-// creates 16 28-bit blocks rotated according
-// to the rotation schedule
+
+/// creates 16 28-bit blocks rotated according to the rotation schedule
+
 private func ksRotate(_ value: UInt32) -> [UInt32] {
     var out = [UInt32](repeating: 0, count: 16)
     var last = value
@@ -68,11 +70,11 @@ private func ksRotate(_ value: UInt32) -> [UInt32] {
     return out
 }
 
-// Expand 48-bit input to 64-bit, with each 6-bit block
-// padded by extra two bits at the top.
-// By doing so, we can have the input blocks (four bits each),
-// and the key blocks (six bits each) well-aligned without
-// extra shifts/rotations for alignments.
+
+/// Expand 48-bit input to 64-bit, with each 6-bit block padded by extra two bits at the top.
+/// By doing so, we can have the input blocks (four bits each), and the key blocks (six bits each)
+/// well-aligned without extra shifts/rotations for alignments.
+
 private func unpack(_ x: UInt64) -> UInt64 {
     let y1 = ((x >> (6 * 1) as UInt64) & 0xff) << (8 * 0)
     let y2 = ((x >> (6 * 3) as UInt64) & 0xff) << (8 * 1)
@@ -85,7 +87,9 @@ private func unpack(_ x: UInt64) -> UInt64 {
     return y1 | y2 | y3 | y4 | y5 | y6 | y7 | y8
 }
 
-// creates 16 56-bit subkeys from the original key
+
+/// creates 16 56-bit subkeys from the original key
+
 private func generateSubkeys(_ keyBytes: [UInt8]) throws -> [UInt64] {
 
     guard let key = UInt64(bigEndianData: Data(bytes: keyBytes)) else {
@@ -147,8 +151,9 @@ private func cryptBlock(subkeys: [UInt64], source: Data, decrypt: Bool) -> Data?
     return permuteFinalBlock(block: preOutput).bigEndianData
 }
 
-// permuteInitialBlock is equivalent to the permutation defined
-// by initialPermutation.
+
+/// permuteInitialBlock is equivalent to the permutation defined by initialPermutation.
+
 private func permuteInitialBlock(block: UInt64) -> UInt64 {
     var block: UInt64 = block
 
@@ -228,8 +233,9 @@ private func permuteInitialBlock(block: UInt64) -> UInt64 {
     return block
 }
 
-// permuteFinalBlock is equivalent to the permutation defined
-// by finalPermutation.
+
+/// permuteFinalBlock is equivalent to the permutation defined by finalPermutation.
+
 func permuteFinalBlock(block: UInt64) -> UInt64 {
     var block = block
 
@@ -267,8 +273,9 @@ func permuteFinalBlock(block: UInt64) -> UInt64 {
     return block
 }
 
-// 8 S-boxes composed of 4 rows and 16 columns
-// Used in the DES cipher function
+
+/// 8 S-boxes composed of 4 rows and 16 columns. Used in the DES cipher function
+
 private let sBoxes: [[[UInt8]]] = [
     // S-box 1
     [
@@ -328,7 +335,9 @@ private let sBoxes: [[[UInt8]]] = [
     ],
 ]
 
-// Yields a 32-bit output from a 32-bit input
+
+/// Yields a 32-bit output from a 32-bit input
+
 private let permutationFunction: [UInt8] = [
     16, 25, 12, 11, 3, 20, 4, 15,
     31, 17, 9, 6, 27, 14, 1, 22,
@@ -336,9 +345,12 @@ private let permutationFunction: [UInt8] = [
     13, 19, 2, 26, 10, 21, 28, 7,
 ]
 
-// feistelBox[s][16*i+j] contains the output of permutationFunction
-// for sBoxes[s][i][j] << 4*(7-s)
+
+/// feistelBox[s][16*i+j] contains the output of permutationFunction
+/// for sBoxes[s][i][j] << 4*(7-s)
+
 private let feistelBox: [[UInt32]] = computeFeistelBox()
+
 
 private func computeFeistelBox() -> [[UInt32]] {
     var feistelBox = [[UInt32]](repeating: [UInt32](repeating: 0, count: 64), count: 8)
@@ -368,7 +380,9 @@ private func computeFeistelBox() -> [[UInt32]] {
     return feistelBox
 }
 
-// DES Feistel function
+
+/// DES Feistel function
+
 private func feistel(l: UInt32, r: UInt32, k0: UInt64, k1: UInt64) -> (UInt32, UInt32) {
 
     var t: UInt32 = 0

@@ -9,6 +9,7 @@ public final class NewtonPlainArray: NewtonObject {
         case invalidValue
     }
 
+    /// Slot values in ascending order (objects)
     public let values: [NewtonObject]
 
     public static func decode(decoder: NewtonObjectDecoder) throws -> NewtonPlainArray {
@@ -18,7 +19,7 @@ public final class NewtonPlainArray: NewtonObject {
             throw DecodingError.missingLength
         }
 
-        // Slot tags in ascending order (symbol objects)
+        // Slot values in ascending order (objects)
         let values: [NewtonObject] = try (0..<Int(length)).map { _ in
             guard let value = try decoder.decodeObject() else {
                 throw DecodingError.invalidValue

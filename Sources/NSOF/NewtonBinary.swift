@@ -10,7 +10,10 @@ public final class NewtonBinary: NewtonObject {
         case missingData
     }
 
+    /// Class (object)
     public let `class`: NewtonObject
+
+    /// Data
     public let data: Data
 
     public static func decode(decoder: NewtonObjectDecoder)

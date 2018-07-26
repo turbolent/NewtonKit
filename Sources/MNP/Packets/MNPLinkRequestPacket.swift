@@ -5,14 +5,14 @@ import Extensions
 
 // MNP / V.42 error correction T-REC-V.42-199303, Annex A
 
-// A.6.4.1 Link request (LR) frame
-//
-// The link request (LR) frame is used to establish an error-corrected connection
-// between two error-correcting entities with an active physical connection.
-// The LR frame is also used to negotiate operational parameters to be in effect
-// for the duration of the error-corrected connection (see A.7.1.5).
-
-// TABLE A.2/V.42: Link request header-field parameters
+/// ## A.6.4.1 Link request (LR) frame
+///
+/// The link request (LR) frame is used to establish an error-corrected connection
+/// between two error-correcting entities with an active physical connection.
+/// The LR frame is also used to negotiate operational parameters to be in effect
+/// for the duration of the error-corrected connection (see A.7.1.5).
+///
+/// TABLE A.2/V.42: Link request header-field parameters
 
 public struct MNPLinkRequestPacket: MNPPacket {
 
@@ -28,77 +28,110 @@ public struct MNPLinkRequestPacket: MNPPacket {
     }
 
 
-    // A.6.4.1.3 Fixed parameter 2 – Constant parameter 1
-    //
-    // This constant parameter shall be the third octet of the header field.
-    // The value of this constant is an octet value of 2.
+    /// ### A.6.4.1.3 Fixed parameter 2:
+    ///
+    /// __Constant parameter 1__
+    ///
+    /// This constant parameter shall be the third octet of the header field.
+    /// The value of this constant is an octet value of 2.
 
     private static let constantParameter1 = Data(bytes: [0x2])
 
 
-    // A.6.4.1.4 Variable parameter 1 – Constant parameter 2
-    //
-    // This constant parameter shall be an octet sequence of value (1,6,1,0,0,0,0,255).
+    /// ### A.6.4.1.4 Variable parameter 1:
+    ///
+    /// __Constant parameter 2__
+    ///
+    /// This constant parameter shall be an octet sequence of value (1,6,1,0,0,0,0,255).
 
     private static let constantParameter2 =
         Data(bytes: [0x1, 0x6, 0x1, 0x0, 0x0, 0x0, 0x0, 0xff])
 
 
-    // A.6.4.1.5 Variable parameter 2 – Framing mode parameter
-    //
-    // The framing mode parameter defines the framing mode to be used
-    // on the error-corrected connection.
-    //
-    // Two-way simultaneous, start-stop, octet-oriented framing mode
-    // shall be represented by framing mode 2.
-    //
-    // Two-way simultaneous, bit-oriented framing mode shall be
-    // represented by framing mode 3.
+    /// ### A.6.4.1.5 Variable parameter 2:
+    ///
+    /// __Framing mode parameter__
+    ///
+    /// The framing mode parameter defines the framing mode to be used
+    /// on the error-corrected connection.
 
     public enum FramingMode: UInt8 {
+
+        /// Two-way simultaneous, start-stop, octet-oriented framing mode
+        /// shall be represented by framing mode 2.
+
         case startStopOctetOriented = 2
+
+        /// Two-way simultaneous, bit-oriented framing mode shall be
+        /// represented by framing mode 3.
+
         case bitOriented = 3
     }
+
+
+    /// ### A.6.4.1.5 Variable parameter 2:
+    ///
+    /// __Framing mode parameter__
+    ///
+    /// The framing mode parameter defines the framing mode to be used
+    /// on the error-corrected connection.
 
     public let framingMode: FramingMode
 
 
-    // A.6.4.1.6 Variable parameter 3 –
-    // Maximum number of outstanding LT frames parameter, k
-    //
-    // The maximum number of outstanding LT frames parameter, k,
-    // defines the maximum number of LT frames with maximum-length
-    // information fields that an error-correcting entity may send
-    // at a given time without waiting for an acknowledgement.
-    // The value of k shall never exceed the sequence number
-    // modulus minus 1.
+    /// ### A.6.4.1.6 Variable parameter 3:
+    ///
+    /// __Maximum number of outstanding LT frames parameter, k__
+    ///
+    /// The maximum number of outstanding LT frames parameter, k,
+    /// defines the maximum number of LT frames with maximum-length
+    /// information fields that an error-correcting entity may send
+    /// at a given time without waiting for an acknowledgement.
+    /// The value of k shall never exceed the sequence number
+    /// modulus minus 1.
 
     public let maxOutstandingLTFrameCount: UInt8
 
 
-    // A.6.4.1.7 Variable parameter 4 –
-    // Maximum information field length parameter N401
-    //
-    // The maximum information-field length parameter, N401, defines
-    // the maximum length of user data, in octets, that can be sent
-    // in the information field of the link transfer (LT) frame.
+    /// ### A.6.4.1.7 Variable parameter 4:
+    ///
+    /// __Maximum information field length parameter N401__
+    ///
+    /// The maximum information-field length parameter, N401, defines
+    /// the maximum length of user data, in octets, that can be sent
+    /// in the information field of the link transfer (LT) frame.
 
     public let maxInfoLength: UInt16
 
-    // A.6.4.1.8 Variable parameter 8 – Data phase optimization
-    //
-    // The data phase optimization parameter defines optional
-    // facilities that may be supported on an error-corrected
-    // connection to improve data throughput.
-    //
-    // The value of this parameter is a bit map that indicates
-    // protocol facilities to be used, as follows:
-    //  - bit 1: 1 = maximum information-field length of 256 octets;
-    //  - bit 2: 1 = fixed field LT and LA frames;
-    //  - bit 3-8: reserved.
 
-    public let maxInfoLength256: Bool
-    public let fixedFieldLTAndLAFrames: Bool
+    /// ### A.6.4.1.8 Variable parameter 8:
+    ///
+    /// __Data phase optimization__
+    //
+    /// The data phase optimization parameter defines optional
+    /// facilities that may be supported on an error-corrected
+    /// connection to improve data throughput.
+    ///
+    /// The value of this parameter is a bit map that indicates
+    /// protocol facilities to be used, as follows:
+    ///  - bit 1: 1 = maximum information-field length of 256 octets;
+    ///  - bit 2: 1 = fixed field LT and LA frames;
+    ///  - bit 3-8: reserved.
+
+    public struct DataPhaseOptimization {
+        let maxInfoLength256: Bool
+        let fixedFieldLTAndLAFrames: Bool
+    }
+
+    /// ### A.6.4.1.8 Variable parameter 8:
+    ///
+    /// __Data phase optimization__
+    //
+    /// The data phase optimization parameter defines optional
+    /// facilities that may be supported on an error-corrected
+    /// connection to improve data throughput.
+
+    public let dataPhaseOptimization: DataPhaseOptimization
 
 
     public let validationErrors: Set<ValidationError>
@@ -107,15 +140,13 @@ public struct MNPLinkRequestPacket: MNPPacket {
     public init(framingMode: FramingMode,
                 maxOutstandingLTFrameCount: UInt8,
                 maxInfoLength: UInt16,
-                maxInfoLength256: Bool,
-                fixedFieldLTAndLAFrames: Bool,
+                dataPhaseOptimization: DataPhaseOptimization,
                 validationErrors: Set<ValidationError>) {
 
         self.framingMode = framingMode
         self.maxOutstandingLTFrameCount = maxOutstandingLTFrameCount
         self.maxInfoLength = maxInfoLength
-        self.maxInfoLength256 = maxInfoLength256
-        self.fixedFieldLTAndLAFrames = fixedFieldLTAndLAFrames
+        self.dataPhaseOptimization = dataPhaseOptimization
         self.validationErrors = validationErrors
     }
 
@@ -161,12 +192,16 @@ public struct MNPLinkRequestPacket: MNPPacket {
 
         let validationErrors = MNPLinkRequestPacket.validate(data: data)
 
-        self.init(framingMode: framingMode,
-                  maxOutstandingLTFrameCount: maxOutstandingLTFrameCount,
-                  maxInfoLength: maxInfoLength,
-                  maxInfoLength256: maxInfoLength256,
-                  fixedFieldLTAndLAFrames: fixedFieldLTAndLAFrames,
-                  validationErrors: validationErrors)
+        self.init(
+            framingMode: framingMode,
+            maxOutstandingLTFrameCount: maxOutstandingLTFrameCount,
+            maxInfoLength: maxInfoLength,
+            dataPhaseOptimization: DataPhaseOptimization(
+                maxInfoLength256: maxInfoLength256,
+                fixedFieldLTAndLAFrames: fixedFieldLTAndLAFrames
+            ),
+            validationErrors: validationErrors
+        )
     }
 
     private static func validate(data: Data) -> Set<ValidationError> {
@@ -212,10 +247,10 @@ public struct MNPLinkRequestPacket: MNPPacket {
         // TODO: verify encoding
         encoded.append(maxInfoLength.littleEndianData)
         var dataPhaseOptimization: UInt8 = 0
-        if maxInfoLength256 {
+        if self.dataPhaseOptimization.maxInfoLength256 {
             dataPhaseOptimization |= 0b1
         }
-        if fixedFieldLTAndLAFrames {
+        if self.dataPhaseOptimization.fixedFieldLTAndLAFrames {
             dataPhaseOptimization |= 0b10
         }
         encoded.append(contentsOf: [0x8, 0x1, dataPhaseOptimization])

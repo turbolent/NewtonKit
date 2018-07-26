@@ -1,25 +1,25 @@
 
 import Foundation
 
-// Newton 1.0 Connection Protocol / Dante Connection Protocol
-//
-// Documented by Newton Research http://newtonresearch.org/
-//
-// Newton communicates with the desktop by exchanging Newton event commands.
-// The general command structure looks like this:
-//
-//   ULong 'newt'    // event header
-//   ULong 'dock'    // event header
-//   ULong 'aaaa'    // specific command
-//   ULong length    // the length in bytes of the following data
-//   UChar data[]    // data, if any
-//
-// NOTE
-// • The length associated with each command is the actual length in bytes
-//   of the data following the length field.
-// • Data is padded with nulls to a 4 byte boundary.
-// • Multi-byte values are in big-endian order.
-// • Strings are null-terminated 2-byte UniChar strings unless otherwise specified.
+/// Newton 1.0 Connection Protocol / Dante Connection Protocol
+///
+/// Documented by Newton Research http://newtonresearch.org/
+///
+/// Newton communicates with the desktop by exchanging Newton event commands.
+/// The general command structure looks like this:
+///
+///   ULong 'newt'    // event header
+///   ULong 'dock'    // event header
+///   ULong 'aaaa'    // specific command
+///   ULong length    // the length in bytes of the following data
+///   UChar data[]    // data, if any
+///
+/// NOTE
+/// • The length associated with each command is the actual length in bytes
+///   of the data following the length field.
+/// • Data is padded with nulls to a 4 byte boundary.
+/// • Multi-byte values are in big-endian order.
+/// • Strings are null-terminated 2-byte UniChar strings unless otherwise specified.
 
 
 public final class DockPacketLayer {

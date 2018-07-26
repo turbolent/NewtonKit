@@ -119,8 +119,8 @@ class MNPTests: XCTestCase {
 
         XCTAssertEqual(linkRequestPacket.maxOutstandingLTFrameCount, 0x8)
         XCTAssertEqual(linkRequestPacket.maxInfoLength, 64)
-        XCTAssertTrue(linkRequestPacket.maxInfoLength256)
-        XCTAssertTrue(linkRequestPacket.fixedFieldLTAndLAFrames)
+        XCTAssertTrue(linkRequestPacket.dataPhaseOptimization.maxInfoLength256)
+        XCTAssertTrue(linkRequestPacket.dataPhaseOptimization.fixedFieldLTAndLAFrames)
 
         let expectedEncoding = Data(bytes: [
             // header

@@ -2,30 +2,29 @@
 import Foundation
 
 
-// Newton Streamed Object Format
-//
-// "[...] the format used when streaming a DAG (Directed Acyclic Graph)*
-// of objects over a communications link."
-//
-// [...]
-//
-// The first byte of a coded object is a version byte that refers to the NSOF version. The
-// version number of the format described here is 2. (Future versions may not be backward
-// compatible.)
-//
-// The rest of the coded object is a recursive description of the DAG of objects, beginning
-// with the root object.
-//
-// The beginning of each object’s description is a tag byte that specifies the encoding type
-// used for the object.
-//
-// The tag byte is followed an ID, called a precedent ID. The IDs are assigned
-// consecutively, starting with 0 for the root object, and are used by the kPrecedent tag to
-// generate backward pointer references to objects that have already been introduced. Note
-// that no object may be traversed more than once; any pointers to previously traversed
-// objects must be represented with kPrecedent. Immediate objects cannot be precedents;
-// all precedents are heap objects (binary objects, arrays, and frames)
-
+/// # Newton Streamed Object Format
+///
+/// "[...] the format used when streaming a DAG (Directed Acyclic Graph)*
+/// of objects over a communications link."
+///
+/// [...]
+///
+/// The first byte of a coded object is a version byte that refers to the NSOF version. The
+/// version number of the format described here is 2. (Future versions may not be backward
+/// compatible.)
+///
+/// The rest of the coded object is a recursive description of the DAG of objects, beginning
+/// with the root object.
+///
+/// The beginning of each object’s description is a tag byte that specifies the encoding type
+/// used for the object.
+///
+/// The tag byte is followed an ID, called a precedent ID. The IDs are assigned
+/// consecutively, starting with 0 for the root object, and are used by the kPrecedent tag to
+/// generate backward pointer references to objects that have already been introduced. Note
+/// that no object may be traversed more than once; any pointers to previously traversed
+/// objects must be represented with kPrecedent. Immediate objects cannot be precedents;
+/// all precedents are heap objects (binary objects, arrays, and frames)
 
 public class NewtonObjectEncoder {
 

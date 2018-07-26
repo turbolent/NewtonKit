@@ -15,7 +15,10 @@ public final class NewtonFrame: NewtonObject {
         case invalidSlotValue
     }
 
+    /// Slot tags in ascending order (symbol objects)
     public let tags: [NewtonSymbol]
+
+    /// Slot values in ascending order (objects)
     public let valuesByTag: [String: NewtonObject]
 
     public static func decode(decoder: NewtonObjectDecoder) throws -> NewtonFrame {

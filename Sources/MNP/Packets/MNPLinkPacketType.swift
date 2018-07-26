@@ -4,12 +4,21 @@ import Foundation
 
 // MNP / V.42 error correction T-REC-V.42-199303, Annex A
 
-// TABLE A.1/V.42: Header-field types
+/// TABLE A.1/V.42: Header-field types
 
 internal enum MNPPacketType: UInt8 {
-    case LR = 1   // Link request
-    case LD = 2   // Link disconnect
+
+    /// Link request
+    case LR = 1
+
+    /// Link disconnect
+    case LD = 2
+
     // NOTE: no 3
-    case LT = 4   // Link transfer
-    case LA = 5   // Link acknowledgement
+
+    /// Link transfer
+    case LT = 4
+
+    /// Link acknowledgement
+    case LA = 5
 }
