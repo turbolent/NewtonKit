@@ -226,7 +226,7 @@ final class CommandPrompt {
         }
 
         if case "paperroll" as NewtonSymbol = entry["viewStationery"] {
-            let document = translateToHtmlDocument(paperroll: entry)
+            let document = translateToHTMLDocument(paperroll: entry)
             let html = render(document, config: pretty)
             let url = try backupFileURL(application: "Notes", filename: "\(uniqueID).html")
             try html.write(to: url, atomically: true, encoding: .utf8)

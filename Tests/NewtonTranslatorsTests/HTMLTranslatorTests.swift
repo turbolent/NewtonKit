@@ -6,11 +6,11 @@ import NSOF
 import Html
 
 
-class NewtonTranslatorsTests: XCTestCase {
+class HTMLTranslatorTests: XCTestCase {
 
-    func testHtmlTranslator() throws {
+    func testHTMLTranslator() throws {
         let document =
-            translateToHtmlDocument(paperroll: [
+            translateToHTMLDocument(paperroll: [
                 "class": "paperroll" as NewtonSymbol,
                 "viewStationery": "paperroll" as NewtonSymbol,
                 "height": 360 as NewtonInteger,
@@ -39,9 +39,9 @@ class NewtonTranslatorsTests: XCTestCase {
         print(render(document, config: pretty))
     }
 
-    static var allTests : [(String, (NewtonTranslatorsTests) -> () throws -> Void)] {
+    static var allTests : [(String, (HTMLTranslatorTests) -> () throws -> Void)] {
         return [
-            ("testHtmlTranslator", testHtmlTranslator),
+            ("testHTMLTranslator", testHTMLTranslator),
         ]
     }
 }

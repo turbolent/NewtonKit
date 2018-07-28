@@ -4,9 +4,13 @@ import CoreFoundation
 
 public extension Date {
     init(minutesSince1904: Int) {
+        self.init(secondsSince1904: minutesSince1904 * 60)
+    }
+
+    init(secondsSince1904: Int) {
         self.init(timeIntervalSinceReferenceDate:
             -kCFAbsoluteTimeIntervalSince1904
-            + Double(minutesSince1904) * 60.0
+            + Double(secondsSince1904)
         )
     }
 }

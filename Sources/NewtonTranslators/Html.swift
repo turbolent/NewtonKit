@@ -46,12 +46,12 @@ private let noteStyle = """
 """
 
 
-public func translateToHtmlDocument(paperroll: NewtonFrame) -> Node {
+public func translateToHTMLDocument(paperroll: NewtonFrame) -> Node {
     let dataValues = (paperroll["data"] as? NewtonPlainArray)?.values ?? []
 
     let nodesAndDimensions =
         dataValues
-            .flatMap(translateToHtmlNode)
+            .flatMap(translateToHTMLNode)
             .sorted { (left, right) -> Bool in
                 let (_, d1) = left
                 let (_, d2) = right
@@ -88,7 +88,7 @@ public func translateToHtmlDocument(paperroll: NewtonFrame) -> Node {
 }
 
 
-public func translateToHtmlNode(paperrollDataObject: NewtonObject) -> (Node, Dimensions)? {
+public func translateToHTMLNode(paperrollDataObject: NewtonObject) -> (Node, Dimensions)? {
 
     guard
         let frame = paperrollDataObject as? NewtonFrame,
@@ -99,14 +99,14 @@ public func translateToHtmlNode(paperrollDataObject: NewtonObject) -> (Node, Dim
 
     switch viewStationery {
     case .para:
-        return translateToHtmlNode(paraFrame: frame)
+        return translateToHTMLNode(paraFrame: frame)
     default:
         return nil
     }
 }
 
 
-public func translateToHtmlNode(paraFrame: NewtonFrame) -> (Node, Dimensions)? {
+public func translateToHTMLNode(paraFrame: NewtonFrame) -> (Node, Dimensions)? {
 
     guard
         let text = (paraFrame["text"] as? NewtonString)?.string,
