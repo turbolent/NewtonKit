@@ -51,7 +51,7 @@ public func translateToHTMLDocument(paperroll: NewtonFrame) -> Node {
 
     let nodesAndDimensions =
         dataValues
-            .flatMap(translateToHTMLNode)
+            .compactMap(translateToHTMLNode)
             .sorted { (left, right) -> Bool in
                 let (_, d1) = left
                 let (_, d2) = right
