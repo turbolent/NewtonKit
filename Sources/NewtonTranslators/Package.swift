@@ -51,7 +51,6 @@ public struct NewtonPackageInfo {
 
     private static let signature = Data(bytes: "package".utf8)
 
-    private static let packageDirectorySize = 52
     private static let partEntrySize = 32
 
 
@@ -176,8 +175,7 @@ public struct NewtonPackageInfo {
         }
 
         let variableLengthDataOffset =
-            NewtonPackageInfo.packageDirectorySize
-            + Int(partCount) * NewtonPackageInfo.partEntrySize
+            partCountEndIndex + Int(partCount) * NewtonPackageInfo.partEntrySize
 
         // Parse copyright (remove null-termination)
 
