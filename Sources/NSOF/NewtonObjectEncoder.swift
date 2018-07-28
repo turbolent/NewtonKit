@@ -29,7 +29,7 @@ import Foundation
 public class NewtonObjectEncoder {
 
     private static let precedentTypes: Set<ObjectIdentifier> =
-        Set(NewtonObjectType.precedentTypes.flatMap {
+        Set(NewtonObjectType.precedentTypes.compactMap {
             $0.swiftType.map {
                 ObjectIdentifier($0)
             }

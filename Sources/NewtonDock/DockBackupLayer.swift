@@ -166,11 +166,11 @@ public class DockBackupLayer {
             return
         }
 
-        let names = soupNamesPacket.names.values.flatMap {
+        let names = soupNamesPacket.names.values.compactMap {
             ($0 as? NewtonString)?.string
         }
 
-        let signatures = soupNamesPacket.signatures.values.flatMap {
+        let signatures = soupNamesPacket.signatures.values.compactMap {
             ($0 as? NewtonInteger)?.integer
         }
 
@@ -246,7 +246,7 @@ public class DockBackupLayer {
             throw Error.invalidSyncOptions
         }
 
-        let stores = storesArray.values.flatMap { $0 as? NewtonFrame }
+        let stores = storesArray.values.compactMap { $0 as? NewtonFrame }
         guard stores.count == storesArray.values.count else {
             throw Error.invalidSyncOptions
         }

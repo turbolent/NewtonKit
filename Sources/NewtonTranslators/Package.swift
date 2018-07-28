@@ -201,5 +201,4 @@ public struct NewtonPackageInfo {
 
         self.name = name
     }
-
 }
