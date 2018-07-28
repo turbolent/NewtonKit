@@ -49,7 +49,7 @@ public struct NewtonPackageInfo {
     }
 
 
-    private static let signature = "package".data(using: .utf8)
+    private static let signature = "package".data(using: .utf8)!
 
     private static let partEntrySize = 32
 
