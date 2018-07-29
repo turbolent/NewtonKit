@@ -2,7 +2,7 @@ import XCTest
 @testable import NewtonDockTests
 @testable import MNPTests
 @testable import NSOFTests
-@testable import HTMLTranslatorTests
+@testable import NewtonTranslatorTests
 @testable import NewtonPackageTests
 
 XCTMain([
