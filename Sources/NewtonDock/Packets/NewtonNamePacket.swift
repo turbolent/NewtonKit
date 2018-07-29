@@ -26,14 +26,17 @@ public struct NewtonNamePacket: DecodableDockPacket {
         }
 
         // length
-        guard let length = UInt32(bigEndianData: data) else {
+        guard
+            let rawLength = UInt32(bigEndianData: data),
+            case let length = Int(rawLength)
+        else {
             throw DecodingError.missingLength
         }
         data = data.dropFirst(MemoryLayout<UInt32>.size)
 
         // Newton info
         newtonInfo = NewtonInfo.decode(data: data)
-        data = data.dropFirst(Int(length))
+        data = data.dropFirst(length)
 
         // Newton name
         guard let name = String(data: data, encoding: .utf16BigEndian) else {

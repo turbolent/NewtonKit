@@ -30,9 +30,12 @@ public struct CurrentTimePacket: DecodableDockPacket {
     public let date: Date
 
     public init(data: Data) throws {
-        guard let minutesSince1904 = UInt32(bigEndianData: data) else {
+        guard
+            let rawMinutesSince1904 = UInt32(bigEndianData: data),
+            case let minutesSince1904 = Int(rawMinutesSince1904)
+        else {
             throw DecodingError.invalidDate
         }
-        date = Date(minutesSince1904: Int(minutesSince1904))
+        date = Date(minutesSince1904: minutesSince1904)
     }
 }

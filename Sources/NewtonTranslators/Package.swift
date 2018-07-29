@@ -6,7 +6,9 @@ import Foundation
 ///
 /// ## Package Container Format
 ///
-/// ### Fixed header
+/// ### Package Directory
+///
+/// #### Fixed header
 ///
 /// The package directory begins with a fixed set of fields represented by the
 /// PackageDirectory structure.
@@ -57,15 +59,15 @@ public struct NewtonPackageInfo {
     /// An arbitrary number used to identify the version of the package.
     /// The Newton OS interprets higher numbers as newer versions.
 
-    let version: UInt32
+    public let version: UInt32
 
-    let copyright: String
+    public let copyright: String
 
-    let name: String
+    public let name: String
 
-    let size: UInt32
+    public let size: UInt32
 
-    let creationDate: Date
+    public let creationDate: Date
 
     public init(data: Data) throws {
 
@@ -111,14 +113,20 @@ public struct NewtonPackageInfo {
         let copyrightOffsetStartIndex = versionEndIndex
         let copyrightOffsetEndIndex = copyrightOffsetStartIndex.advanced(by: MemoryLayout<UInt16>.size)
         let copyrightOffsetData = data.subdata(in: copyrightOffsetStartIndex..<copyrightOffsetEndIndex)
-        guard let copyrightOffset = UInt16(bigEndianData: copyrightOffsetData) else {
+        guard
+            let rawCopyrightOffset = UInt16(bigEndianData: copyrightOffsetData),
+            case let copyrightOffset = Int(rawCopyrightOffset)
+        else {
             throw DecodingError.invalidCopyrightOffset
         }
 
         let copyrightLengthStartIndex = copyrightOffsetEndIndex
         let copyrightLengthEndIndex = copyrightLengthStartIndex.advanced(by: MemoryLayout<UInt16>.size)
         let copyrightLengthData = data.subdata(in: copyrightLengthStartIndex..<copyrightLengthEndIndex)
-        guard let copyrightLength = UInt16(bigEndianData: copyrightLengthData) else {
+        guard
+            let rawCopyrightLength = UInt16(bigEndianData: copyrightLengthData),
+            case let copyrightLength = Int(rawCopyrightLength)
+        else {
             throw DecodingError.invalidCopyrightLength
         }
 
@@ -127,14 +135,20 @@ public struct NewtonPackageInfo {
         let nameOffsetStartIndex = copyrightLengthEndIndex
         let nameOffsetEndIndex = nameOffsetStartIndex.advanced(by: MemoryLayout<UInt16>.size)
         let nameOffsetData = data.subdata(in: nameOffsetStartIndex..<nameOffsetEndIndex)
-        guard let nameOffset = UInt16(bigEndianData: nameOffsetData) else {
+        guard
+            let rawNameOffset = UInt16(bigEndianData: nameOffsetData),
+            case let nameOffset = Int(rawNameOffset)
+        else {
             throw DecodingError.invalidNameOffset
         }
 
         let nameLengthStartIndex = nameOffsetEndIndex
         let nameLengthEndIndex = nameLengthStartIndex.advanced(by: MemoryLayout<UInt16>.size)
         let nameLengthData = data.subdata(in: nameLengthStartIndex..<nameLengthEndIndex)
-        guard let nameLength = UInt16(bigEndianData: nameLengthData) else {
+        guard
+            let rawNameLength = UInt16(bigEndianData: nameLengthData),
+            case let nameLength = Int(rawNameLength)
+        else {
             throw DecodingError.invalidNameLength
         }
 
@@ -157,12 +171,15 @@ public struct NewtonPackageInfo {
         let creationDateStartIndex = sizeEndIndex
         let creationDateEndIndex = creationDateStartIndex.advanced(by: MemoryLayout<UInt32>.size)
         let creationDateData = data.subdata(in: creationDateStartIndex..<creationDateEndIndex)
-        guard let creationDate = UInt32(bigEndianData: creationDateData) else {
+        guard
+            let rawCreationDate = UInt32(bigEndianData: creationDateData),
+            case let creationDate = Int(rawCreationDate)
+        else {
             throw DecodingError.invalidDate
         }
 
         // NOTE: documentation specifies January 4, but every application seems to use January 1
-        self.creationDate = Date(secondsSince1904: Int(creationDate))
+        self.creationDate = Date(secondsSince1904: creationDate)
 
         // Skip `reserved2`, `reserved3`, and `directorySize`
         // Parse part count
@@ -170,18 +187,21 @@ public struct NewtonPackageInfo {
         let partCountStartIndex = creationDateEndIndex.advanced(by: 3 * MemoryLayout<UInt32>.size)
         let partCountEndIndex = partCountStartIndex.advanced(by: MemoryLayout<UInt32>.size)
         let partCountData = data.subdata(in: partCountStartIndex..<partCountEndIndex)
-        guard let partCount = UInt32(bigEndianData: partCountData) else {
+        guard
+            let rawPartCount = UInt32(bigEndianData: partCountData),
+            case let partCount = Int(rawPartCount)
+        else {
             throw DecodingError.invalidPartCount
         }
 
         let variableLengthDataOffset =
-            partCountEndIndex + Int(partCount) * NewtonPackageInfo.partEntrySize
+            partCountEndIndex + partCount * NewtonPackageInfo.partEntrySize
 
         // Parse copyright (remove null-termination)
 
         let copyrightStartIndex =
-            data.startIndex.advanced(by: variableLengthDataOffset + Int(copyrightOffset))
-        let copyrightEndIndex = copyrightStartIndex.advanced(by: Int(copyrightLength) - 2)
+            data.startIndex.advanced(by: variableLengthDataOffset + copyrightOffset)
+        let copyrightEndIndex = copyrightStartIndex.advanced(by: copyrightLength - 2)
         let copyrightData = data.subdata(in: copyrightStartIndex..<copyrightEndIndex)
         guard let copyright = String(data: copyrightData, encoding: .utf16BigEndian) else {
             throw DecodingError.invalidCopyright
@@ -192,8 +212,8 @@ public struct NewtonPackageInfo {
         // Parse name (remove null-termination)
 
         let nameStartIndex =
-            data.startIndex.advanced(by: variableLengthDataOffset + Int(nameOffset))
-        let nameEndIndex = nameStartIndex.advanced(by: Int(nameLength) - 2)
+            data.startIndex.advanced(by: variableLengthDataOffset + nameOffset)
+        let nameEndIndex = nameStartIndex.advanced(by: nameLength - 2)
         let nameData = data.subdata(in: nameStartIndex..<nameEndIndex)
         guard let name = String(data: nameData, encoding: .utf16BigEndian) else {
             throw DecodingError.invalidName
