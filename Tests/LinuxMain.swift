@@ -3,7 +3,6 @@ import XCTest
 @testable import MNPTests
 @testable import NSOFTests
 @testable import NewtonTranslatorsTests
-@testable import NewtonPackageTests
 
 XCTMain([
     testCase(NewtonDockTests.allTests),
