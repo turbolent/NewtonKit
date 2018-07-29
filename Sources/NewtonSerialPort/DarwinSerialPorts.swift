@@ -1,5 +1,5 @@
 
-#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
+#if os(macOS)
 
 import Foundation
 import IOKit

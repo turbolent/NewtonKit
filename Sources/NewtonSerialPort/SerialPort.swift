@@ -30,7 +30,7 @@ public struct SerialPort: Hashable {
     }
 }
 
-#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
+#if os(macOS)
 
 import IOKit
 
