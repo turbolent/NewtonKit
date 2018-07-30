@@ -39,17 +39,43 @@ public struct NewtonPackageInfo {
     public enum DecodingError: Error {
         case invalidSignature
         case invalidVersion
-        case invalidCopyrightOffset
-        case invalidCopyrightLength
+        case invalidCopyrightInfoRef
         case invalidCopyright
-        case invalidNameOffset
-        case invalidNameLength
+        case invalidNameInfoRef
         case invalidName
         case invalidSize
         case invalidDate
         case invalidPartCount
     }
 
+
+    /// > InfoRef: An unsigned 16-bit offset followed by an unsigned 16-bit length.
+    /// > InfoRefs are used to refer to variable-length data items in the variable-length data area
+    /// > of the package directory. The offset is from the beginning of the data area; the length
+    /// > is the number of bytes in the data item.
+
+    private static func parseInfoRef(data: Data, startIndex: Data.Index)
+        -> (offset: Data.Index, length: Int, endIndex: Data.Index)?
+    {
+
+        guard
+            case let (rawOffset, offsetEndIndex)?: (UInt16, Data.Index)? =
+                data.sliceBigEndian(startIndex: startIndex),
+            case let offset = Int(rawOffset)
+        else {
+            return nil
+        }
+
+        guard
+            case let (rawLength, endIndex)?: (UInt16, Data.Index)? =
+                data.sliceBigEndian(startIndex: offsetEndIndex),
+            case let length = Int(rawLength)
+        else {
+            return nil
+        }
+
+        return (offset: offset, length: length, endIndex: endIndex)
+    }
 
     private static let signature = "package".data(using: .utf8)!
 
@@ -78,26 +104,23 @@ public struct NewtonPackageInfo {
         // > information area; "package1" signifies a package that may contain
         // > one, depending on kRelocationFlag.
 
-        let signatureLength = NewtonPackageInfo.signature.count
-
-        guard data.count >= signatureLength else {
-            throw DecodingError.invalidSignature
-        }
-
-        let signatureStartIndex = data.startIndex
-        let signatureEndIndex = signatureStartIndex.advanced(by: signatureLength)
-        let signatureData = data.subdata(in: signatureStartIndex..<signatureEndIndex)
-        guard signatureData == NewtonPackageInfo.signature else {
+        guard
+            case let (signatureData, signatureEndIndex)? =
+                data.slice(NewtonPackageInfo.signature.count),
+            signatureData == NewtonPackageInfo.signature
+        else {
             throw DecodingError.invalidSignature
         }
 
         // Skip last signature byte, `reserved1`, and `flags`.
         // Parse the version
 
-        let versionStartIndex = signatureEndIndex.advanced(by: 1 + 2 * MemoryLayout<UInt32>.size)
-        let versionEndIndex = versionStartIndex.advanced(by: MemoryLayout<UInt32>.size)
-        let versionData = data.subdata(in: versionStartIndex..<versionEndIndex)
-        guard let version = UInt32(bigEndianData: versionData) else {
+        guard
+            case let versionStartIndex =
+                signatureEndIndex.advanced(by: 1 + 2 * MemoryLayout<UInt32>.size),
+            case let (version, versionEndIndex)?: (UInt32, Data.Index)? =
+                data.sliceBigEndian(startIndex: versionStartIndex)
+        else {
             throw DecodingError.invalidVersion
         }
 
@@ -105,59 +128,25 @@ public struct NewtonPackageInfo {
 
         // Parse copyright InfoRef
 
-        // > InfoRef: An unsigned 16-bit offset followed by an unsigned 16-bit length.
-        // > InfoRefs are used to refer to variable-length data items in the variable-length data area
-        // > of the package directory. The offset is from the beginning of the data area; the length
-        // > is the number of bytes in the data item.
-
-        let copyrightOffsetStartIndex = versionEndIndex
-        let copyrightOffsetEndIndex = copyrightOffsetStartIndex.advanced(by: MemoryLayout<UInt16>.size)
-        let copyrightOffsetData = data.subdata(in: copyrightOffsetStartIndex..<copyrightOffsetEndIndex)
-        guard
-            let rawCopyrightOffset = UInt16(bigEndianData: copyrightOffsetData),
-            case let copyrightOffset = Int(rawCopyrightOffset)
+        guard case let (copyrightOffset, copyrightLength, copyrightInfoRefEndIndex)? =
+            NewtonPackageInfo.parseInfoRef(data: data, startIndex: versionEndIndex)
         else {
-            throw DecodingError.invalidCopyrightOffset
-        }
-
-        let copyrightLengthStartIndex = copyrightOffsetEndIndex
-        let copyrightLengthEndIndex = copyrightLengthStartIndex.advanced(by: MemoryLayout<UInt16>.size)
-        let copyrightLengthData = data.subdata(in: copyrightLengthStartIndex..<copyrightLengthEndIndex)
-        guard
-            let rawCopyrightLength = UInt16(bigEndianData: copyrightLengthData),
-            case let copyrightLength = Int(rawCopyrightLength)
-        else {
-            throw DecodingError.invalidCopyrightLength
+            throw DecodingError.invalidCopyrightInfoRef
         }
 
         // Parse name InfoRef
 
-        let nameOffsetStartIndex = copyrightLengthEndIndex
-        let nameOffsetEndIndex = nameOffsetStartIndex.advanced(by: MemoryLayout<UInt16>.size)
-        let nameOffsetData = data.subdata(in: nameOffsetStartIndex..<nameOffsetEndIndex)
-        guard
-            let rawNameOffset = UInt16(bigEndianData: nameOffsetData),
-            case let nameOffset = Int(rawNameOffset)
+        guard case let (nameOffset, nameLength, nameInfoRefEndIndex)? =
+            NewtonPackageInfo.parseInfoRef(data: data, startIndex: copyrightInfoRefEndIndex)
         else {
-            throw DecodingError.invalidNameOffset
-        }
-
-        let nameLengthStartIndex = nameOffsetEndIndex
-        let nameLengthEndIndex = nameLengthStartIndex.advanced(by: MemoryLayout<UInt16>.size)
-        let nameLengthData = data.subdata(in: nameLengthStartIndex..<nameLengthEndIndex)
-        guard
-            let rawNameLength = UInt16(bigEndianData: nameLengthData),
-            case let nameLength = Int(rawNameLength)
-        else {
-            throw DecodingError.invalidNameLength
+            throw DecodingError.invalidNameInfoRef
         }
 
         // Parse size
 
-        let sizeStartIndex = nameLengthEndIndex
-        let sizeEndIndex = sizeStartIndex.advanced(by: MemoryLayout<UInt32>.size)
-        let sizeData = data.subdata(in: sizeStartIndex..<sizeEndIndex)
-        guard let size = UInt32(bigEndianData: sizeData) else {
+        guard case let (size, sizeEndIndex)?: (UInt32, Data.Index)? =
+            data.sliceBigEndian(startIndex: nameInfoRefEndIndex)
+        else {
             throw DecodingError.invalidSize
         }
 
@@ -168,11 +157,9 @@ public struct NewtonPackageInfo {
         // > Date: Unsigned 32-bit integer representing a date and time
         // > as the number of seconds since midnight, January 4, 1904.
 
-        let creationDateStartIndex = sizeEndIndex
-        let creationDateEndIndex = creationDateStartIndex.advanced(by: MemoryLayout<UInt32>.size)
-        let creationDateData = data.subdata(in: creationDateStartIndex..<creationDateEndIndex)
         guard
-            let rawCreationDate = UInt32(bigEndianData: creationDateData),
+            case let (rawCreationDate, creationDateEndIndex)?: (UInt32, Data.Index)? =
+                data.sliceBigEndian(startIndex: sizeEndIndex),
             case let creationDate = Int(rawCreationDate)
         else {
             throw DecodingError.invalidDate
@@ -184,11 +171,11 @@ public struct NewtonPackageInfo {
         // Skip `reserved2`, `reserved3`, and `directorySize`
         // Parse part count
 
-        let partCountStartIndex = creationDateEndIndex.advanced(by: 3 * MemoryLayout<UInt32>.size)
-        let partCountEndIndex = partCountStartIndex.advanced(by: MemoryLayout<UInt32>.size)
-        let partCountData = data.subdata(in: partCountStartIndex..<partCountEndIndex)
         guard
-            let rawPartCount = UInt32(bigEndianData: partCountData),
+            case let partCountStartIndex =
+                creationDateEndIndex.advanced(by: 3 * MemoryLayout<UInt32>.size),
+            case let (rawPartCount, partCountEndIndex)?: (UInt32, Data.Index)? =
+                data.sliceBigEndian(startIndex: partCountStartIndex),
             case let partCount = Int(rawPartCount)
         else {
             throw DecodingError.invalidPartCount
@@ -199,11 +186,13 @@ public struct NewtonPackageInfo {
 
         // Parse copyright (remove null-termination)
 
-        let copyrightStartIndex =
-            data.startIndex.advanced(by: variableLengthDataOffset + copyrightOffset)
-        let copyrightEndIndex = copyrightStartIndex.advanced(by: copyrightLength - 2)
-        let copyrightData = data.subdata(in: copyrightStartIndex..<copyrightEndIndex)
-        guard let copyright = String(data: copyrightData, encoding: .utf16BigEndian) else {
+        guard
+            case let copyrightStartIndex =
+                data.startIndex.advanced(by: variableLengthDataOffset + copyrightOffset),
+            case let (copyrightData, _)? =
+                data.slice(copyrightLength - 2, startIndex: copyrightStartIndex),
+            let copyright = String(data: copyrightData, encoding: .utf16BigEndian)
+        else {
             throw DecodingError.invalidCopyright
         }
 
@@ -211,11 +200,13 @@ public struct NewtonPackageInfo {
 
         // Parse name (remove null-termination)
 
-        let nameStartIndex =
-            data.startIndex.advanced(by: variableLengthDataOffset + nameOffset)
-        let nameEndIndex = nameStartIndex.advanced(by: nameLength - 2)
-        let nameData = data.subdata(in: nameStartIndex..<nameEndIndex)
-        guard let name = String(data: nameData, encoding: .utf16BigEndian) else {
+        guard
+            case let nameStartIndex =
+                data.startIndex.advanced(by: variableLengthDataOffset + nameOffset),
+            case let (nameData, _)? =
+                data.slice(nameLength - 2, startIndex: nameStartIndex),
+            let name = String(data: nameData, encoding: .utf16BigEndian)
+        else {
             throw DecodingError.invalidName
         }
 
