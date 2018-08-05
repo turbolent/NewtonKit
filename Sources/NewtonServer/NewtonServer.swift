@@ -1,4 +1,5 @@
 import Foundation
+import CoreFoundation
 import Dispatch
 import NewtonCommon
 
@@ -9,6 +10,7 @@ public final class NewtonServer {
         case failedToBind
         case failedToListen
         case failedToDisablePipeSignal
+        case failedToReuseAddress
         case notConnected
     }
 
@@ -23,7 +25,6 @@ public final class NewtonServer {
     public var onRead: ((Data) throws -> Void)?
     public var onReadError: ((Swift.Error) -> Void)?
     public var onClose: (() -> Void)?
-
 
     public init() {}
 
@@ -49,7 +50,7 @@ public final class NewtonServer {
     private func listen(fileDescriptor: FileDescriptor) throws {
         #if os(Linux) || os(FreeBSD)
         let listenResult = Glibc.listen(fileDescriptor.fd, 16)
-        #else
+        #elseif os(macOS) || os(iOS)
         let listenResult = Darwin.listen(fileDescriptor.fd, 16)
         #endif
         guard listenResult == 0 else {
@@ -58,9 +59,30 @@ public final class NewtonServer {
     }
 
     private func createSocket() throws -> CFSocket {
-        guard let socket =
-            CFSocketCreate(kCFAllocatorDefault, PF_INET, SOCK_STREAM, IPPROTO_TCP, 0, nil, nil)
-        else {
+
+        #if os(Linux) || os(FreeBSD)
+        let optSocket = CFSocketCreate(
+            kCFAllocatorDefault,
+            PF_INET,
+            Int32(SOCK_STREAM.rawValue),
+            Int32(IPPROTO_TCP),
+            0,
+            nil,
+            nil
+        )
+        #elseif os(macOS) || os(iOS)
+        let optSocket = CFSocketCreate(
+            kCFAllocatorDefault,
+            PF_INET,
+            SOCK_STREAM,
+            IPPROTO_TCP,
+            0,
+            nil,
+            nil
+        )
+        #endif
+
+        guard let socket = optSocket else {
             throw SocketError.failedToCreate
         }
 
@@ -68,6 +90,15 @@ public final class NewtonServer {
     }
 
     private func bind(socket: CFSocket, port: UInt16) throws {
+
+        #if os(Linux) || os(FreeBSD)
+        var address = sockaddr_in(
+            sin_family: sa_family_t(AF_INET),
+            sin_port: in_port_t(port.bigEndian),
+            sin_addr: in_addr(s_addr: INADDR_ANY),
+            sin_zero: (0, 0, 0, 0, 0, 0, 0, 0)
+        )
+        #elseif os(macOS) || os(iOS)
         var address = sockaddr_in(
             sin_len: UInt8(MemoryLayout<sockaddr_in>.size),
             sin_family: sa_family_t(AF_INET),
@@ -75,14 +106,23 @@ public final class NewtonServer {
             sin_addr: in_addr(s_addr: INADDR_ANY),
             sin_zero: (0, 0, 0, 0, 0, 0, 0, 0)
         )
+        #endif
 
-        let addressPointer = withUnsafePointer(to: &address) {
-            UnsafePointer<UInt8>(OpaquePointer($0))
+        let addressData = withUnsafePointer(to: &address) {
+            $0.withMemoryRebound(to: UInt8.self, capacity: MemoryLayout<sockaddr_in>.size) {
+                CFDataCreate(kCFAllocatorDefault, $0, MemoryLayout<sockaddr_in>.size)
+            }
         }
 
-        let addressData = Data(bytes: addressPointer, count: MemoryLayout<sockaddr_in>.size) as CFData
+        try reuseAddress(fd: CFSocketGetNative(socket))
 
-        guard CFSocketSetAddress(socket, addressData) == CFSocketError.success else {
+        #if os(Linux) || os(FreeBSD)
+        let socketSuccess = kCFSocketSuccess
+        #elseif os(macOS) || os(iOS)
+        let socketSuccess = CFSocketError.success
+        #endif
+
+        guard CFSocketSetAddress(socket, addressData) == socketSuccess else {
             CFSocketInvalidate(socket)
             throw SocketError.failedToBind
         }
@@ -103,11 +143,16 @@ public final class NewtonServer {
         }
 
         var length: socklen_t = 0
+
+        #if os(Linux) || os(FreeBSD)
+        var clientAddress = sockaddr()
+        #elseif os(macOS) || os(iOS)
         var clientAddress = sockaddr(
             sa_len: 0,
             sa_family: 0,
             sa_data: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         )
+        #endif
 
         // NOTE: always accept, even if there is already a connection active
         let clientFD = accept(socketFileDescriptor.fd, &clientAddress, &length)
@@ -152,7 +197,7 @@ public final class NewtonServer {
         #if os(Linux)
         // There is no SO_NOSIGPIPE in Linux and FreeBSD. We could instead use the MSG_NOSIGNAL flag
         // when calling send(), or use signal(SIGPIPE, SIG_IGN) to ignore SIGPIPE.
-        #else
+        #elseif os(macOS) || os(iOS)
         var no_sig_pipe: Int32 = 1
         let result = setsockopt(
             fd,
@@ -165,6 +210,20 @@ public final class NewtonServer {
             throw SocketError.failedToDisablePipeSignal
         }
         #endif
+    }
+
+    private func reuseAddress(fd: Int32) throws {
+        var yes: Int32 = 1
+        let result = setsockopt(
+            fd,
+            Int32(SOL_SOCKET),
+            Int32(SO_REUSEADDR),
+            &yes,
+            socklen_t(MemoryLayout<Int32>.size)
+        )
+        guard result == 0 else {
+            throw SocketError.failedToReuseAddress
+        }
     }
 
     private func createReadSource(fileDescriptor: FileDescriptor) -> DispatchSourceRead {
