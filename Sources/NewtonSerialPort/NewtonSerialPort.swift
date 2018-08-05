@@ -9,6 +9,7 @@ public final class NewtonSerialPort {
         case failedToGetSettings
         case failedToSetSpeed
         case failedToSetSettings
+        case failedToFlush
         case notOpen
     }
 
@@ -59,6 +60,10 @@ public final class NewtonSerialPort {
 
         guard tcsetattr(fileDescriptor.fd, TCSANOW, &settings) == 0 else {
             throw Error.failedToSetSettings
+        }
+
+        guard tcflush(fileDescriptor.fd, TCIOFLUSH) == 0 else {
+            throw Error.failedToFlush
         }
     }
 
