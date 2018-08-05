@@ -128,6 +128,9 @@ final class CommandPrompt {
         }
 
         state = .loadingPackage
+
+        print("Package info: \(try NewtonPackageInfo(data: data))")
+
         try dockConnectionLayer.loadPackage(data: data)
     }
 
@@ -179,6 +182,7 @@ final class CommandPrompt {
             switch state {
             case .idle:
                 let parts = line.split(separator: " ", maxSplits: 1)
+
                 if let firstPart = parts.first,
                     let command = Command(rawValue: String(firstPart)) {
 
@@ -194,7 +198,7 @@ final class CommandPrompt {
                             print("Missing path")
                             break
                         }
-                        let path = String(parts[1])
+                        let path = String(parts[1]).trimmingCharacters(in: .whitespacesAndNewlines)
                         try loadPackage(atPath: path)
                     }
                 }
