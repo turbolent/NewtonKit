@@ -4,6 +4,7 @@
 import Foundation
 import IOKit
 import IOKit.serial
+import NewtonCommon
 
 public class DarwinSerialPortMonitor: SerialPortMonitor {
 
@@ -23,14 +24,12 @@ public class DarwinSerialPortMonitor: SerialPortMonitor {
     public var callback: Callback
 
     private static let matchCallback: IOServiceMatchingCallback = { userData, iterator in
-        let monitor =
-            Unmanaged<DarwinSerialPortMonitor>.fromOpaque(userData!).takeUnretainedValue()
+        let monitor: DarwinSerialPortMonitor = fromContext(pointer: userData!)
         monitor.dispatchEvent(event: .matched, iterator: iterator)
     }
 
     private static let termCallback: IOServiceMatchingCallback = { userData, iterator in
-        let monitor =
-            Unmanaged<DarwinSerialPortMonitor>.fromOpaque(userData!).takeUnretainedValue()
+        let monitor: DarwinSerialPortMonitor = fromContext(pointer: userData!)
         monitor.dispatchEvent(event: .terminated, iterator: iterator)
     }
 
@@ -51,7 +50,7 @@ public class DarwinSerialPortMonitor: SerialPortMonitor {
             return
         }
 
-        let selfPointer = Unmanaged.passUnretained(self).toOpaque()
+        let selfPointer = toContext(object: self)
 
         // add matching notification
 

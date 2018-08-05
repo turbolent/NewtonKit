@@ -1,6 +1,6 @@
 
 import Foundation
-import Extensions
+import NewtonCommon
 
 
 // MNP / V.42 error correction T-REC-V.42-199303, Annex A

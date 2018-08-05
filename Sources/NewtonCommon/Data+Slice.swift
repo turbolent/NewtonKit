@@ -14,20 +14,22 @@ public extension Data {
     }
 
     func sliceBigEndian<T>(startIndex: Index? = nil) -> (T, Index)? where T: FixedWidthInteger {
-        guard case let (data, endIndex)? = slice(MemoryLayout<T>.size, startIndex: startIndex) else {
-            return nil
-        }
-        guard let integer = T(bigEndianData: data) else {
+        guard
+            case let (data, endIndex)? =
+                slice(MemoryLayout<T>.size, startIndex: startIndex),
+            let integer = T(bigEndianData: data)
+        else {
             return nil
         }
         return (integer, endIndex)
     }
 
     func sliceLittleEndian<T>(startIndex: Index? = nil) -> (T, Index)? where T: FixedWidthInteger {
-        guard case let (data, endIndex)? = slice(MemoryLayout<T>.size, startIndex: startIndex) else {
-            return nil
-        }
-        guard let integer = T(littleEndianData: data) else {
+        guard
+            case let (data, endIndex)? =
+                slice(MemoryLayout<T>.size, startIndex: startIndex),
+            let integer = T(littleEndianData: data)
+        else {
             return nil
         }
         return (integer, endIndex)

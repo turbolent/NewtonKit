@@ -1,89 +1,7 @@
 
 import Foundation
 import Dispatch
-
-
-#if os(Linux) || os(FreeBSD)
-    import var Glibc.errno
-#else
-    import var Darwin.C.errno
-#endif
-
-
-internal struct FileDescriptor {
-
-    internal enum Error: Swift.Error {
-        case failedToOpen(errno: Int32)
-        case failedToRead(errno: Int32)
-        case failedToWrite(errno: Int32)
-        case failedToClose(errno: Int32)
-    }
-
-    internal private(set) var fd: Int32
-
-    init(path: String, oflag: Int32) throws {
-        let fd = open(path, oflag)
-        guard fd >= 0 else {
-            throw Error.failedToOpen(errno: errno)
-        }
-        self.fd = fd
-    }
-
-    internal func read(count: Int) throws -> Data? {
-        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
-        defer {
-            buffer.deallocate(capacity: count)
-        }
-        #if os(Linux) || os(FreeBSD)
-            let status = Glibc.read(fd, buffer, count)
-        #else
-            let status = Darwin.read(fd, buffer, count)
-        #endif
-
-        // error?
-        guard status >= 0 else {
-            throw Error.failedToRead(errno: errno)
-        }
-
-        // end of file?
-        guard status > 0 else {
-            return nil
-        }
-
-        return Data(bytes: buffer, count: status)
-    }
-
-    internal func write(data: Data) throws {
-        _ = try data.withUnsafeBytes { (p: UnsafePointer<UInt8>) in
-            let rawPointer = UnsafeRawPointer(p)
-            let count = data.count
-
-            #if os(Linux) || os(FreeBSD)
-                let status = Glibc.write(fd, rawPointer, count)
-            #else
-                let status = Darwin.write(fd, rawPointer, count)
-            #endif
-
-            guard status == count else {
-                throw Error.failedToWrite(errno: errno)
-            }
-            return
-        }
-    }
-
-    public func close() throws {
-        #if os(Linux) || os(FreeBSD)
-            let status = Glibc.close(fd)
-        #else
-            let status = Darwin.close(fd)
-        #endif
-
-        guard status == 0 else {
-            throw Error.failedToClose(errno: errno)
-        }
-    }
-}
-
+import NewtonCommon
 
 public final class NewtonSerialPort {
 
@@ -147,7 +65,7 @@ public final class NewtonSerialPort {
     private func createSource(fileDescriptor: FileDescriptor) -> DispatchSourceRead {
         // see https://developer.apple.com/library/content/documentation/General/Conceptual/ConcurrencyProgrammingGuide/GCDWorkQueues/GCDWorkQueues.html
         let source = DispatchSource.makeReadSource(fileDescriptor: fileDescriptor.fd,
-                                                   queue: DispatchQueue.global())
+                                                   queue: .global())
         source.setEventHandler(handler: handleReadEvent)
         source.setCancelHandler(handler: handleReadCancellation)
         return source
