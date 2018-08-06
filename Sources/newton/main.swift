@@ -165,7 +165,7 @@ dockConnectionLayer.onStateChange = { _, state in
             }
         }
     case .disconnected:
-        exit(0)
+        print("Disconnected")
     default:
         commandPrompt.handleDockConnectionState(state: state)
     }

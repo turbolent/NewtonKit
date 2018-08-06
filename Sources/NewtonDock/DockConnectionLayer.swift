@@ -6,7 +6,7 @@ import NSOF
 public final class DockConnectionLayer {
 
     public enum State {
-        case idle
+        case disconnected
         case initiatedDocking
         case sentDesktopInfo
         case sentWhichIcons
@@ -15,7 +15,6 @@ public final class DockConnectionLayer {
         case keyboardPassthrough
         case backingUp
         case loadingPackage
-        case disconnected
     }
 
     public enum Error: Swift.Error {
@@ -47,7 +46,7 @@ public final class DockConnectionLayer {
     public var onWrite: ((EncodableDockPacket) throws -> Void)?
     public var onCallResult: ((NewtonObject) -> Void)?
 
-    public private(set) var state: State = .idle {
+    public private(set) var state: State = .disconnected {
         didSet {
             onStateChange?(oldValue, state)
         }
@@ -71,17 +70,20 @@ public final class DockConnectionLayer {
 
         print("XXX \(packet)")
 
-        if packet is DisconnectPacket {
+        switch packet {
+        case is DisconnectPacket:
             state = .disconnected
             keyboardPassthroughLayer.handleDisconnect()
             backupLayer.handleDisconnect()
             packageLayer.handleDisconnect()
             onDisconnect?()
             return
+        default:
+            break
         }
 
         switch state {
-        case .idle:
+        case .disconnected:
             if packet is RequestToDockPacket {
                 try write(packet: InitiateDockingPacket(sessionType: .noSession))
                 state = .initiatedDocking
@@ -146,8 +148,6 @@ public final class DockConnectionLayer {
             try keyboardPassthroughLayer.read(packet: packet)
         case .backingUp:
             try backupLayer.read(packet: packet)
-        case .disconnected:
-            break
         }
     }
 
@@ -158,7 +158,7 @@ public final class DockConnectionLayer {
     internal func sendError() throws {
         // TODO: or protocolError?
         try write(packet: ResultPacket(error: .desktopError))
-        state = .idle
+        state = .disconnected
     }
 
     public func startKeyboardPassthrough() throws {
