@@ -2,6 +2,11 @@ import Foundation
 import CoreFoundation
 import Dispatch
 import NewtonCommon
+import CDNS_SD
+
+#if os(Linux) || os(FreeBSD)
+import Glibc
+#endif
 
 public final class NewtonServer {
 
@@ -11,9 +16,11 @@ public final class NewtonServer {
         case failedToListen
         case failedToDisablePipeSignal
         case failedToReuseAddress
+        case failedToAnnounce
         case notConnected
     }
 
+    private var dnsServiceRef: DNSServiceRef? = nil
     private var socket: CFSocket? = nil
     private var socketFileDescriptor: FileDescriptor? = nil
     private var connectionSource: DispatchSourceRead? = nil
@@ -26,7 +33,11 @@ public final class NewtonServer {
     public var onReadError: ((Swift.Error) -> Void)?
     public var onClose: (() -> Void)?
 
-    public init() {}
+    public init() {
+        #if os(Linux) || os(FreeBSD)
+        setenv("AVAHI_COMPAT_NOWARN", "1", 1)
+        #endif
+    }
 
     public var isListening: Bool {
         return socketFileDescriptor != nil
@@ -41,6 +52,8 @@ public final class NewtonServer {
 
         let source = createConnectionSource(fileDescriptor: fileDescriptor)
         try listen(fileDescriptor: fileDescriptor)
+
+        dnsServiceRef = try announceService(port: port)
 
         self.socket = socket
         socketFileDescriptor = fileDescriptor
@@ -126,6 +139,20 @@ public final class NewtonServer {
             CFSocketInvalidate(socket)
             throw SocketError.failedToBind
         }
+    }
+
+    private func announceService(port: UInt16) throws -> DNSServiceRef {
+        var dnsServiceRef = DNSServiceRef(bitPattern: 0)
+        let type = "_newton-dock._tcp."
+        let registrationResult =
+            DNSServiceRegister(&dnsServiceRef, 0, 0, nil, type, nil, nil, port, 0, nil, nil, nil)
+        guard
+            registrationResult == kDNSServiceErr_NoError,
+            let result = dnsServiceRef
+        else {
+            throw SocketError.failedToAnnounce
+        }
+        return result
     }
 
     private func createConnectionSource(fileDescriptor: FileDescriptor) -> DispatchSourceRead {
@@ -316,6 +343,11 @@ public final class NewtonServer {
         readSource = nil
         try? clientFileDescriptor?.close()
         clientFileDescriptor = nil
+
+        if let dnsServiceRef = dnsServiceRef {
+            DNSServiceRefDeallocate(dnsServiceRef)
+        }
+        self.dnsServiceRef = nil
 
         onDisconnect?()
     }

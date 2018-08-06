@@ -1,6 +1,14 @@
 // swift-tools-version:4.0
 import PackageDescription
 
+
+#if os(iOS) || os(macOS)
+    let cdns_sd = "CDNS_Services"
+#else
+    let cdns_sd = "CDNS_SD"
+#endif
+
+
 let package = Package(
     name: "NewtonKit",
     products: [
@@ -24,8 +32,9 @@ let package = Package(
         .library(name: "NewtonServer",
                  targets: ["NewtonServer"])
     ],
-     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-web.git", .revision("8cf59d3ede28ab6ed1b8ba7daad082267dd89a50")),
+    dependencies: [
+        .package(url: "https://github.com/pointfreeco/swift-web.git", .branch(name: "master")),
+        .package(url: "https://github.com/rhx/\(cdns_sd).git", .upToNextMinor(from: "1.0.0"))
     ],
     targets: [
         .target(name: "NewtonCommon"),
