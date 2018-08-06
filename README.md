@@ -68,5 +68,5 @@ socat -d -d PTY,raw,mode=666,echo=0,link=$HOME/einstein \
 Then start the NewtonKit command line tool:
 
 ```
-swift run $HOME/einstein
+swift run serial $HOME/einstein
 ```
