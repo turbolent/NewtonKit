@@ -11,6 +11,23 @@ An implementation of the Apple Newton Dock protocol in Swift.
 ## Usage
 
 
+### Connection type
+
+#### TCP
+
+On your computer, run:
+
+```sh
+swift run tcp
+```
+
+This will start a TCP server on the Newton Dock port 3679.
+
+Once you see `Waiting for connection ...`, start the Dock application on your Newton and initiate a TCP/IP connection.
+The connection is succesfully established once `Connected` appears, at which point you may enter a command (see below).
+
+#### Serial
+
 On your computer, run:
 
 ```sh
@@ -19,11 +36,11 @@ swift run <path-to-serial-device>
 
 Where `<path-to-serial-device>` is the path to the serial device the Newton is connected to. On macOS, you should use the `/dev/cu.usbserial-*` device which appears when a USB-to-serial adapter is used. On Linux, the device name is likely `/dev/ttyUSB*` or `/dev/ttyS*`.
 
-Once you see `Connecting ...` start the Dock application on your Newton and initiate a serial connection.
+Once you see `Waiting for connection ...` start the Dock application on your Newton and initiate a serial connection.
 The connection is succesfully established once `Connected` appears, at which point you may enter a command.
 
 
-Commands:
+### Commands
 
 - `keyboard`: Start keyboard passthrough. Enter `.stop` to stop and return to the command prompt.
 - `info`: Get Newton system information
