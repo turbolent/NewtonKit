@@ -16,9 +16,9 @@ let package = Package(
                     targets: ["newton"]),
         .library(name: "NewtonKit",
                  targets: [
-                    "NewtonKit", "NSOF", "MNP",
-                    "NewtonDock", "NewtonSerialPort"
-                ]),
+                    "NewtonKit", "NSOF", "NewtonCommon", "MNP", "NewtonDock",
+                    "NewtonSerialPort", "NewtonTranslators", "NewtonServer"
+                 ]),
         .library(name: "NSOF",
                  targets: ["NSOF"]),
         .library(name: "MNP",
@@ -33,7 +33,7 @@ let package = Package(
                  targets: ["NewtonServer"])
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-web.git", .branch(name: "master")),
+        .package(url: "https://github.com/pointfreeco/swift-web.git", .branch("master")),
         .package(url: "https://github.com/rhx/\(cdns_sd).git", .upToNextMinor(from: "1.0.0"))
     ],
     targets: [

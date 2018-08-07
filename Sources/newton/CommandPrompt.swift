@@ -234,6 +234,10 @@ final class CommandPrompt {
             let html = render(document, config: pretty)
             let url = try backupFileURL(application: "Notes", filename: "\(uniqueID).html")
             try html.write(to: url, atomically: true, encoding: .utf8)
+        } else if case "meeting" as NewtonSymbol = entry["viewStationery"] {
+            // TODO: translateToEvent(meeting: entry)
+        } else {
+            print("Unsupported soup entry:", entry)
         }
     }
 

@@ -61,7 +61,7 @@ class NewtonPackageTests: XCTestCase {
 
         XCTAssertEqual(packageInfo.version, 10)
         XCTAssertEqual(packageInfo.size, 174416)
-        XCTAssertEqual(packageInfo.creationDate, parseDate("1998-03-13 08:37:19"))
+        XCTAssertEqual(packageInfo.creationDate, parseDate("1998-03-13 08:37:19")!)
         XCTAssertEqual(packageInfo.copyright, "©1996-97 Scrawl, LLC.  All rights reserved.")
         XCTAssertEqual(packageInfo.name, "PT100:Scrawl")
     }
@@ -120,7 +120,7 @@ class NewtonPackageTests: XCTestCase {
 
         XCTAssertEqual(packageInfo.version, 3)
         XCTAssertEqual(packageInfo.size, 136340)
-        XCTAssertEqual(packageInfo.creationDate, parseDate("1995-06-15 12:25:40"))
+        XCTAssertEqual(packageInfo.creationDate, parseDate("1995-06-15 12:25:40")!)
         XCTAssertEqual(packageInfo.copyright, "ﾩ1993-1995 Ron Flax. All rights reserved.")
         XCTAssertEqual(packageInfo.name, "PageXpress:RONFLAX")
     }

@@ -10,4 +10,5 @@ XCTMain([
     testCase(NSOFTests.allTests),
     testCase(HTMLTranslatorTests.allTests),
     testCase(NewtonPackageTests.allTests),
+    testCase(EventTranslatorTests.allTests),
 ])
