@@ -27,15 +27,28 @@ final class CommandPrompt {
         case load
     }
 
+    private static func documentsDirectory() throws -> URL {
+        #if os(macOS) || os(iOS)
+        return try FileManager.default.url(for: .documentDirectory,
+                                           in: .userDomainMask,
+                                           appropriateFor: nil,
+                                           create: true)
+        #elseif os(Linux) || os(FreeBSD)
+        if let xdgDocumentsDir = ProcessInfo.processInfo.environment["XDG_DOCUMENTS_DIR"] {
+            return URL(fileURLWithPath: xdgDocumentsDir)
+        }
+
+        return URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true)
+            .appendingPathComponent("Documents")
+        #endif
+    }
+
     private static func defaultBackupPath() throws -> String {
-        var supportDirectoryURL =
-            try FileManager.default.url(for: .applicationSupportDirectory,
-                                        in: .userDomainMask,
-                                        appropriateFor: nil,
-                                        create: true)
-        supportDirectoryURL.appendPathComponent("Newton", isDirectory: true)
-        supportDirectoryURL.appendPathComponent("Backups", isDirectory: true)
-        return supportDirectoryURL.path
+        var documentsDirectory = try self.documentsDirectory()
+        documentsDirectory.appendPathComponent("Newton", isDirectory: true)
+        documentsDirectory.appendPathComponent("Backups", isDirectory: true)
+        print(documentsDirectory.path)
+        return documentsDirectory.path
     }
 
     private(set) var started = false
