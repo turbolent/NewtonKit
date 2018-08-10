@@ -11,8 +11,8 @@ matrix:
         - sudo apt-get -qq update
         - sudo apt-get install -y libblocksruntime0
       install:
-        - export SWIFT_VERSION=swift-4.0.3-RELEASE
+        - export SWIFT_VERSION=swift-4.2-CONVERGENCE
         - >
-          curl https://swift.org/builds/swift-4.0.3-release/ubuntu1404/$SWIFT_VERSION/$SWIFT_VERSION-ubuntu14.04.tar.gz
+          curl https://swift.org/builds/`echo $SWIFT_VERSION | tr '[:upper:]' '[:lower:]'`/ubuntu1404/$SWIFT_VERSION/$SWIFT_VERSION-ubuntu14.04.tar.gz
           | tar xz --directory $HOME --strip-components=1
         - export PATH=$HOME/usr/bin:$PATH
