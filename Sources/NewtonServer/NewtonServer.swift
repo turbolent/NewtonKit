@@ -19,6 +19,7 @@ public final class NewtonServer {
         case failedToDisablePipeSignal
         case failedToReuseAddress
         case failedToAnnounce
+        case failedToGetAddress
         case notConnected
     }
 
@@ -215,11 +216,6 @@ public final class NewtonServer {
             return
         }
 
-        let host = withUnsafePointer(to: &clientAddress) { (pointer: UnsafePointer<sockaddr>) in
-            pointer.withMemoryRebound(to: sockaddr_in.self, capacity: MemoryLayout<sockaddr_in>.size) {
-                getHost(socketAddress: $0.pointee)
-            }
-        }
 
         do {
             try disablePipeSignal(fd: clientFD)
@@ -227,17 +223,29 @@ public final class NewtonServer {
             return
         }
 
+        guard let address = try? getAddress(fileDescriptor: clientFileDescriptor) else {
+            return
+        }
+
         self.clientFileDescriptor = clientFileDescriptor
         readSource = createReadSource(fileDescriptor: clientFileDescriptor)
 
-        onConnect?(host)
+        onConnect?(address)
     }
 
-    private func getHost(socketAddress: sockaddr_in) -> String {
-        var socketAddress = socketAddress
-        var buffer = [CChar](repeating: 0, count: Int(INET_ADDRSTRLEN))
-        inet_ntop(AF_INET, &socketAddress.sin_addr, &buffer, socklen_t(INET_ADDRSTRLEN))
-        return String(cString: buffer)
+    private func getAddress(fileDescriptor: FileDescriptor) throws -> String {
+        var addr = sockaddr()
+        var len = socklen_t(MemoryLayout<sockaddr>.size)
+        guard getpeername(fileDescriptor.fd, &addr, &len) == 0 else {
+            throw SocketError.failedToGetAddress
+        }
+        var hostBuffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+        let nameInfoResult =
+            getnameinfo(&addr, len, &hostBuffer, socklen_t(hostBuffer.count), nil, 0, NI_NUMERICHOST)
+        guard nameInfoResult == 0 else {
+            throw SocketError.failedToGetAddress
+        }
+        return String(cString: hostBuffer)
     }
 
     private func disablePipeSignal(fd: Int32) throws {
