@@ -121,7 +121,7 @@ case .tcp:
             try server.write(data: $0)
         },
         start: {
-            try server.listen(port: 3679)
+            try server.startListening()
         },
         stop: {
             server.stopListening()

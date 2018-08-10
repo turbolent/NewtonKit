@@ -10,6 +10,8 @@ import Glibc
 
 public final class NewtonServer {
 
+    public static let newtonDockPort: UInt16 = 3679
+
     public enum SocketError: Error {
         case failedToCreate
         case failedToBind
@@ -33,19 +35,27 @@ public final class NewtonServer {
     public var onReadError: ((Swift.Error) -> Void)?
     public var onClose: (() -> Void)?
 
-    public init() {
+    public let port: UInt16
+
+    public init(port: UInt16 = NewtonServer.newtonDockPort) {
+        self.port = port
+
         #if os(Linux) || os(FreeBSD)
         setenv("AVAHI_COMPAT_NOWARN", "1", 1)
         #endif
     }
 
     public var isListening: Bool {
-        return socketFileDescriptor != nil
+        return socket != nil
     }
 
-    public func listen(port: UInt16) throws {
+    public var isAnnouncingService: Bool {
+        return dnsServiceRef != nil
+    }
+
+    public func startListening() throws {
         let socket = try createSocket()
-        try bind(socket: socket, port: port)
+        try bind(socket: socket)
 
         let fd = CFSocketGetNative(socket)
         let fileDescriptor = FileDescriptor(fd: fd)
@@ -53,7 +63,7 @@ public final class NewtonServer {
         let source = createConnectionSource(fileDescriptor: fileDescriptor)
         try listen(fileDescriptor: fileDescriptor)
 
-        dnsServiceRef = try announceService(port: port)
+        try startAnnouncingService()
 
         self.socket = socket
         socketFileDescriptor = fileDescriptor
@@ -62,7 +72,7 @@ public final class NewtonServer {
 
     private func listen(fileDescriptor: FileDescriptor) throws {
         #if os(Linux) || os(FreeBSD)
-        let listenResult = Glibc.listen(fileDescriptor.fd, 16)
+        let listenResult = Glibc.startListening(fileDescriptor.fd, 16)
         #elseif os(macOS) || os(iOS)
         let listenResult = Darwin.listen(fileDescriptor.fd, 16)
         #endif
@@ -102,7 +112,7 @@ public final class NewtonServer {
         return socket
     }
 
-    private func bind(socket: CFSocket, port: UInt16) throws {
+    private func bind(socket: CFSocket) throws {
 
         #if os(Linux) || os(FreeBSD)
         var address = sockaddr_in(
@@ -141,18 +151,28 @@ public final class NewtonServer {
         }
     }
 
-    private func announceService(port: UInt16) throws -> DNSServiceRef {
+    public func startAnnouncingService() throws {
+        stopAnnouncingService()
+
         var dnsServiceRef = DNSServiceRef(bitPattern: 0)
         let type = "_newton-dock._tcp."
         let registrationResult =
             DNSServiceRegister(&dnsServiceRef, 0, 0, nil, type, nil, nil, port, 0, nil, nil, nil)
         guard
             registrationResult == kDNSServiceErr_NoError,
-            let result = dnsServiceRef
+            dnsServiceRef != nil
         else {
             throw SocketError.failedToAnnounce
         }
-        return result
+
+        self.dnsServiceRef = dnsServiceRef
+    }
+
+    public func stopAnnouncingService() {
+        if let dnsServiceRef = dnsServiceRef {
+            DNSServiceRefDeallocate(dnsServiceRef)
+        }
+        self.dnsServiceRef = nil
     }
 
     private func createConnectionSource(fileDescriptor: FileDescriptor) -> DispatchSourceRead {
@@ -344,10 +364,7 @@ public final class NewtonServer {
         try? clientFileDescriptor?.close()
         clientFileDescriptor = nil
 
-        if let dnsServiceRef = dnsServiceRef {
-            DNSServiceRefDeallocate(dnsServiceRef)
-        }
-        self.dnsServiceRef = nil
+        stopAnnouncingService()
 
         onDisconnect?()
     }
