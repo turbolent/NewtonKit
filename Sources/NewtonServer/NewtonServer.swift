@@ -2,10 +2,12 @@ import Foundation
 import CoreFoundation
 import Dispatch
 import NewtonCommon
-import CDNS_SD
 
 #if os(Linux) || os(FreeBSD)
 import Glibc
+import CDNS_SD
+#elseif os(macOS) || os(iOS)
+import dnssd
 #endif
 
 public final class NewtonServer {

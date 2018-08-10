@@ -1,13 +1,5 @@
-// swift-tools-version:4.0
+// swift-tools-version:4.2
 import PackageDescription
-
-
-#if os(iOS) || os(macOS)
-    let cdns_sd = "CDNS_Services"
-#else
-    let cdns_sd = "CDNS_SD"
-#endif
-
 
 let package = Package(
     name: "NewtonKit",
@@ -30,11 +22,11 @@ let package = Package(
         .library(name: "NewtonTranslators",
                  targets: ["NewtonTranslators"]),
         .library(name: "NewtonServer",
-                 targets: ["NewtonServer"])
+                 targets: ["NewtonServer"]),
+        .library(name: "CDNS_SD", targets: ["CDNS_SD"])
     ],
     dependencies: [
         .package(url: "https://github.com/pointfreeco/swift-web.git", .branch("master")),
-        .package(url: "https://github.com/rhx/\(cdns_sd).git", .upToNextMinor(from: "1.0.0"))
     ],
     targets: [
         .target(name: "NewtonCommon"),
@@ -49,7 +41,7 @@ let package = Package(
         .target(name: "NewtonTranslators",
                 dependencies: ["NSOF", "Html"]),
         .target(name: "NewtonServer",
-                dependencies: ["NewtonCommon"]),
+                dependencies: ["NewtonCommon", "CDNS_SD"]),
         .target(name: "NewtonKit",
                 dependencies: [
                     "NSOF", "NewtonCommon", "MNP", "NewtonDock",
@@ -57,6 +49,7 @@ let package = Package(
                 ]),
         .target(name: "newton",
                 dependencies: ["NewtonKit"]),
+        .systemLibrary(name: "CDNS_SD"),
         .testTarget(name: "MNPTests",
                     dependencies: ["MNP"]),
         .testTarget(name: "NSOFTests",
