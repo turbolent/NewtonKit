@@ -8,7 +8,7 @@ XCTMain([
     testCase(NewtonDockTests.allTests),
     testCase(MNPTests.allTests),
     testCase(NSOFTests.allTests),
-    testCase(HTMLTranslatorTests.allTests),
+    testCase(DocumentTranslatorTests.allTests),
     testCase(NewtonPackageTests.allTests),
     testCase(EventTranslatorTests.allTests),
 ])

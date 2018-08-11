@@ -64,6 +64,14 @@ public final class NewtonFrame: NewtonObject {
         }
     }
 
+    public func getInteger(_ tagName: String) -> Int32? {
+        return (valuesByTag[tagName] as? NewtonInteger)?.integer
+    }
+
+    public func getString(_ tagName: String) -> String? {
+        return (valuesByTag[tagName] as? NewtonString)?.string
+    }
+
     public func encode(encoder: NewtonObjectEncoder) -> Data {
         var data = Data(bytes: [NewtonObjectType.frame.rawValue])
         data.append(NewtonObjectEncoder.encode(xlong: Int32(tags.count)))

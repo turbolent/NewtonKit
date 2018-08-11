@@ -3,18 +3,29 @@ import NSOF
 import Foundation
 
 
-public struct Dimensions {
-    let top: Int32
-    let left: Int32
-    let bottom: Int32
-    let right: Int32
-}
-
-
 fileprivate extension NewtonSymbol {
     static let para = NewtonSymbol(name: "para")
 }
 
+public struct Document: Equatable {
+    var creationDate: Date?
+    var lastModifiedDate: Date?
+    var html: String
+}
+
+public func translateToDocument(paperroll: NewtonFrame) -> Document {
+
+    let creationDate = paperroll.getInteger("timestamp")
+        .map { Date(minutesSince1904: Int($0)) }
+
+    let lastModifiedDate = paperroll.getInteger("_modTime")
+        .map { Date(minutesSince1904: Int($0)) }
+
+    let htmlDocument = translateToHTMLDocument(paperroll: paperroll)
+    let html = render(htmlDocument, config: pretty)
+
+    return Document(creationDate: creationDate, lastModifiedDate: lastModifiedDate, html: html)
+}
 
 private let noteStyle = """
   html {
@@ -44,7 +55,6 @@ private let noteStyle = """
     min-height: 100%;
   }
 """
-
 
 public func translateToHTMLDocument(paperroll: NewtonFrame) -> Node {
     let dataValues = (paperroll["data"] as? NewtonPlainArray)?.values ?? []
@@ -109,7 +119,7 @@ public func translateToHTMLNode(paperrollDataObject: NewtonObject) -> (Node, Dim
 public func translateToHTMLNode(paraFrame: NewtonFrame) -> (Node, Dimensions)? {
 
     guard
-        let text = (paraFrame["text"] as? NewtonString)?.string,
+        let text = paraFrame.getString("text"),
         let dimensions = paraFrame["viewBounds"]
             .flatMap({ convertDimensions(dimensionsObject: $0) })
     else {
@@ -146,10 +156,10 @@ public func translateToHTMLNode(paraFrame: NewtonFrame) -> (Node, Dimensions)? {
 public func convertDimensions(dimensionsObject: NewtonObject) -> Dimensions? {
 
     if let frame = dimensionsObject as? NewtonFrame,
-        let top = (frame["top"] as? NewtonInteger)?.integer,
-        let left = (frame["left"] as? NewtonInteger)?.integer,
-        let bottom = (frame["bottom"] as? NewtonInteger)?.integer,
-        let right = (frame["right"] as? NewtonInteger)?.integer {
+        let top = frame.getInteger("top"),
+        let left = frame.getInteger("left"),
+        let bottom = frame.getInteger("bottom"),
+        let right = frame.getInteger("right") {
 
         return Dimensions(top: top, left: left, bottom: bottom, right: right)
     }
