@@ -52,6 +52,10 @@ public final class DockConnectionLayer {
         }
     }
 
+    public var isConnected: Bool {
+        return state != .disconnected
+    }
+
     private var des: DES
     private var newtonKey: Data?
 
@@ -66,17 +70,26 @@ public final class DockConnectionLayer {
         packageLayer.connectionLayer = self
     }
 
+    public func disconnect() throws {
+        guard isConnected else {
+            return
+        }
+
+        state = .disconnected
+        keyboardPassthroughLayer.handleDisconnect()
+        backupLayer.handleDisconnect()
+        packageLayer.handleDisconnect()
+        onDisconnect?()
+        try write(packet: DisconnectPacket())
+    }
+
     public func read(packet: DecodableDockPacket) throws {
 
         print("XXX \(packet)")
 
         switch packet {
         case is DisconnectPacket:
-            state = .disconnected
-            keyboardPassthroughLayer.handleDisconnect()
-            backupLayer.handleDisconnect()
-            packageLayer.handleDisconnect()
-            onDisconnect?()
+            try disconnect()
             return
         default:
             break
