@@ -25,6 +25,11 @@ public final class DockConnectionLayer {
         case loadingPackage
     }
 
+    public struct Connection {
+        public let newtonInfo: NewtonInfo
+        public let newtonName: String
+    }
+
     private static let timeout: UInt32 = 60
 
     private static let desktopKey =
@@ -42,7 +47,8 @@ public final class DockConnectionLayer {
         [0xe4, 0x0f, 0x7e, 0x9f, 0x0a, 0x36, 0x2c, 0xfa]
 
     public var onStateChange: ((State, State) -> Void)?
-    public var onDisconnect: (() -> Void)?
+    public var onConnect: ((Connection) -> Void)?
+    public var onDisconnect: ((Connection) -> Void)?
     public var onWrite: ((EncodableDockPacket) throws -> Void)?
     public var onCallResult: ((NewtonObject) -> Void)?
 
@@ -58,6 +64,7 @@ public final class DockConnectionLayer {
 
     private var des: DES
     private var newtonKey: Data?
+    public private(set) var connection: Connection?
 
     public let keyboardPassthroughLayer = DockKeyboardPassthroughLayer()
     public let backupLayer = DockBackupLayer()
@@ -75,17 +82,23 @@ public final class DockConnectionLayer {
             return
         }
 
-        state = .disconnected
+        newtonKey = nil
+        let connection = self.connection
+        self.connection = nil
+
         keyboardPassthroughLayer.handleDisconnect()
         backupLayer.handleDisconnect()
         packageLayer.handleDisconnect()
-        onDisconnect?()
+        if let connection = connection {
+            onDisconnect?(connection)
+        }
+
+        state = .disconnected
+
         try write(packet: DisconnectPacket())
     }
 
     public func read(packet: DecodableDockPacket) throws {
-
-        print("XXX \(packet)")
 
         switch packet {
         case is DisconnectPacket:
@@ -102,7 +115,12 @@ public final class DockConnectionLayer {
                 state = .initiatedDocking
             }
         case .initiatedDocking:
-            if packet is NewtonNamePacket {
+            if let newtonNamePacket = packet as? NewtonNamePacket {
+                connection = Connection(
+                    newtonInfo: newtonNamePacket.newtonInfo,
+                    newtonName: newtonNamePacket.name
+                )
+
                 let packet =
                     try DesktopInfoPacket(protocolVersion: 10,
                                           desktopType: .macintosh,
@@ -112,12 +130,16 @@ public final class DockConnectionLayer {
                                           desktopApps: DockConnectionLayer.desktopApps)
                 try write(packet: packet)
                 state = .sentDesktopInfo
+            } else {
+                try sendError()
             }
         case .sentDesktopInfo:
             if let newtonInfoPacket = packet as? NewtonInfoPacket {
                 newtonKey = newtonInfoPacket.encryptedKey
                 try write(packet: WhichIconsPacket(iconMask: .all))
                 state = .sentWhichIcons
+            } else {
+                try sendError()
             }
         case .sentWhichIcons:
             if let resultPacket = packet as? ResultPacket {
@@ -126,6 +148,8 @@ public final class DockConnectionLayer {
                 }
                 try write(packet: SetTimeoutPacket(timeout: DockConnectionLayer.timeout))
                 state = .sentSetTimeout
+            } else {
+                try sendError()
             }
         case .sentSetTimeout:
             if packet is PasswordPacket {
@@ -137,6 +161,11 @@ public final class DockConnectionLayer {
                 }
                 try write(packet: PasswordPacket(encryptedKey: encryptedKey))
                 state = .connected
+                if let connection = connection {
+                    onConnect?(connection)
+                }
+            } else {
+                try sendError()
             }
         case .connected:
             switch packet {
@@ -171,7 +200,7 @@ public final class DockConnectionLayer {
     internal func sendError() throws {
         // TODO: or protocolError?
         try write(packet: ResultPacket(error: .desktopError))
-        state = .disconnected
+        try disconnect()
     }
 
     public func startKeyboardPassthrough() throws {
