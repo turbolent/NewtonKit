@@ -2,7 +2,6 @@
 import Foundation
 import NSOF
 
-
 public final class DockConnectionLayer {
 
     public enum State {
@@ -89,11 +88,14 @@ public final class DockConnectionLayer {
         keyboardPassthroughLayer.handleDisconnect()
         backupLayer.handleDisconnect()
         packageLayer.handleDisconnect()
-        if let connection = connection {
-            onDisconnect?(connection)
-        }
 
         state = .disconnected
+
+        defer {
+            if let connection = connection {
+                onDisconnect?(connection)
+            }
+        }
 
         try write(packet: DisconnectPacket())
     }

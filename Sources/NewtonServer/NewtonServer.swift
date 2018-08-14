@@ -218,7 +218,6 @@ public final class NewtonServer {
             return
         }
 
-
         do {
             try disablePipeSignal(fd: clientFD)
         } catch {
@@ -319,7 +318,7 @@ public final class NewtonServer {
 
             try onRead?(data)
         } catch let error {
-            stopListening()
+            stopReading()
             onReadError?(error)
         }
     }
@@ -333,6 +332,8 @@ public final class NewtonServer {
 
     public func stopListening() {
         stopReading()
+
+        stopAnnouncingService()
 
         if let source = connectionSource, !source.isCancelled {
             // NOTE: indicate to handleConnectionCancellation to not call
@@ -374,8 +375,6 @@ public final class NewtonServer {
         try? clientFileDescriptor?.close()
         clientFileDescriptor = nil
 
-        stopAnnouncingService()
-
         onDisconnect?()
     }
 
@@ -383,6 +382,7 @@ public final class NewtonServer {
         guard let fileDescriptor = clientFileDescriptor else {
             throw SocketError.notConnected
         }
+
         try fileDescriptor.write(data: data)
     }
 }
