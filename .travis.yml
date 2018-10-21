@@ -1,18 +1,22 @@
 language: generic
+env:
+  global:
+    - SWIFT_BRANCH=swift-4.2-release
+    - SWIFT_VERSION=swift-4.2-RELEASE
 matrix:
   include:
-    - script: swift test
+    - script: swift package update && swift test
       os: osx
-      osx_image: xcode9
-    - script: swift test
+      osx_image: xcode10
+    - script: swift package update && swift test
+      os: linux
       sudo: required
       dist: trusty
       before_install:
         - sudo apt-get -qq update
         - sudo apt-get install -y libblocksruntime0
       install:
-        - export SWIFT_VERSION=swift-4.2-CONVERGENCE
         - >
-          curl https://swift.org/builds/`echo $SWIFT_VERSION | tr '[:upper:]' '[:lower:]'`/ubuntu1404/$SWIFT_VERSION/$SWIFT_VERSION-ubuntu14.04.tar.gz
+          curl https://swift.org/builds/$SWIFT_BRANCH/ubuntu1404/$SWIFT_VERSION/$SWIFT_VERSION-ubuntu14.04.tar.gz
           | tar xz --directory $HOME --strip-components=1
         - export PATH=$HOME/usr/bin:$PATH
