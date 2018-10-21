@@ -1,4 +1,5 @@
 import Html
+import HtmlPrettyPrint
 import NSOF
 import Foundation
 
@@ -22,7 +23,7 @@ public func translateToDocument(paperroll: NewtonFrame) -> Document {
         .map { Date(minutesSince1904: Int($0)) }
 
     let htmlDocument = translateToHTMLDocument(paperroll: paperroll)
-    let html = render(htmlDocument, config: pretty)
+    let html = prettyPrint(htmlDocument)
 
     return Document(creationDate: creationDate, lastModifiedDate: lastModifiedDate, html: html)
 }
@@ -80,19 +81,18 @@ public func translateToHTMLDocument(paperroll: NewtonFrame) -> Node {
         .map { $0.1.bottom }
         .max() ?? 0
 
-    return document([
-        html([
-            head([
-                style(noteStyle),
-                title("")
-            ]),
-            body([
-                div([
-                        style("height: \(height)px"),
-                        id("content")
-                    ],
-                    nodesAndDimensions.map { $0.0 })
-            ])
+    return html([
+        head(title: "", content: [
+            style(unsafe: noteStyle),
+        ]),
+        body([
+            div(
+                [
+                    Attribute("style", "height: \(height)px" as String?) as Attribute<Tag.Div>,
+                    id("content")
+                ],
+                nodesAndDimensions.map { $0.0 }
+            )
         ])
     ])
 }
@@ -139,15 +139,15 @@ public func translateToHTMLNode(paraFrame: NewtonFrame) -> (Node, Dimensions)? {
         "height: \(height)px"
     ].joined(separator: "; ")
 
-    let encoded = encode(text).string
+    let encoded = escapeTextNode(text: text)
         .replacingOccurrences(of: "\r", with: "<br>")
         .replacingOccurrences(of: " ", with: "&nbsp;")
 
     return (
         p([
-            style(styleAttribute)
+            Attribute("style", styleAttribute)
         ], [
-            .text(unsafeUnencodedString(encoded))
+            .raw(encoded)
         ]),
         dimensions
     )

@@ -46,9 +46,11 @@ class DocumentTranslatorTests: XCTestCase {
 
 
         let expectedHTML = """
-            <!DOCTYPE html>
             <html>
               <head>
+                <title>
+                  
+                </title>
                 <style>
                     html {
                 box-sizing: border-box;
@@ -77,16 +79,22 @@ class DocumentTranslatorTests: XCTestCase {
                 min-height: 100%;
               }
                 </style>
-                <title>
-                  
-                </title>
               </head>
               <body>
-                <div style="height: 197px" id="content">
-                  <p style="position: absolute; left: 10px; width: 113px; top: 7px; height: 78px">
+                <div style="height: 197px"
+                     id="content">
+                  <p style="position: absolute;
+                             left: 10px;
+                             width: 113px;
+                             top: 7px;
+                             height: 78px">
                     This&nbsp;is&nbsp;a&nbsp;test<br><br>
                   </p>
-                  <p style="position: absolute; left: 322px; width: 48px; top: 175px; height: 22px">
+                  <p style="position: absolute;
+                             left: 322px;
+                             width: 48px;
+                             top: 175px;
+                             height: 22px">
                     Hello!
                   </p>
                 </div>
