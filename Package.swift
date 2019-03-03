@@ -26,8 +26,7 @@ let package = Package(
         .library(name: "CDNS_SD", targets: ["CDNS_SD"])
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-html.git", .revision("0.1.3")),
-        .package(url: "https://github.com/pointfreeco/swift-web.git", .branch("master")),
+        .package(url: "https://github.com/pointfreeco/swift-html.git", from: "0.2.0")
     ],
     targets: [
         .target(name: "NewtonCommon"),
@@ -40,7 +39,7 @@ let package = Package(
         .target(name: "NewtonDock",
                 dependencies: ["NewtonCommon", "NSOF"]),
         .target(name: "NewtonTranslators",
-                dependencies: ["NSOF", "Html", "HtmlPrettyPrint"]),
+                dependencies: ["NSOF", "Html"]),
         .target(name: "NewtonServer",
                 dependencies: ["NewtonCommon", "CDNS_SD"]),
         .target(name: "NewtonKit",

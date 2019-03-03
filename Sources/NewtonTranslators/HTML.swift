@@ -1,5 +1,4 @@
 import Html
-import HtmlPrettyPrint
 import NSOF
 import Foundation
 
@@ -14,6 +13,7 @@ public struct Document: Equatable {
     var html: String
 }
 
+
 public func translateToDocument(paperroll: NewtonFrame) -> Document {
 
     let creationDate = paperroll.getInteger("timestamp")
@@ -23,7 +23,7 @@ public func translateToDocument(paperroll: NewtonFrame) -> Document {
         .map { Date(minutesSince1904: Int($0)) }
 
     let htmlDocument = translateToHTMLDocument(paperroll: paperroll)
-    let html = prettyPrint(htmlDocument)
+    let html = debugRender(htmlDocument)
 
     return Document(creationDate: creationDate, lastModifiedDate: lastModifiedDate, html: html)
 }

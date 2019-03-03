@@ -44,12 +44,10 @@ class DocumentTranslatorTests: XCTestCase {
                 "_uniqueID": 0 as NewtonInteger
             ])
 
-
         let expectedHTML = """
             <html>
               <head>
                 <title>
-                  
                 </title>
                 <style>
                     html {
