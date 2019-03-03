@@ -75,7 +75,7 @@ public final class NewtonServer {
 
     private func listen(fileDescriptor: FileDescriptor) throws {
         #if os(Linux) || os(FreeBSD)
-        let listenResult = Glibc.startListening(fileDescriptor.fd, 16)
+        let listenResult = Glibc.listen(fileDescriptor.fd, 16)
         #elseif os(macOS) || os(iOS)
         let listenResult = Darwin.listen(fileDescriptor.fd, 16)
         #endif
