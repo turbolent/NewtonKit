@@ -3,13 +3,11 @@ services:
   - docker
 matrix:
   include:
-    - script: swift package update && swift test
-      os: osx
+    - os: osx
       osx_image: xcode10.1
-    - script:
-        - docker run -it --rm --name swift --security-opt seccomp=unconfined -v $PWD:/root/project -w /root/project swift-4.2-dnssd swift test
-      os: linux
-      sudo: required
-      dist: trusty
+      script: swift package update && swift test
+    - os: linux
       before_install:
-        - cd swift-4.2-dnssd && docker build -t swift-4.2-dnssd .
+        - cd swift-4.2-dnssd && docker build -t swift-4.2-dnssd . && cd ..
+      script:
+        - docker run -it --rm --name swift --security-opt seccomp=unconfined -v $PWD:/root/project -w /root/project swift-4.2-dnssd swift test
