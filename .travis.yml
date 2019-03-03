@@ -1,13 +1,13 @@
 language: generic
 env:
   global:
-    - SWIFT_BRANCH=swift-4.2-release
-    - SWIFT_VERSION=swift-4.2-RELEASE
+    - SWIFT_BRANCH=swift-4.2.3-release
+    - SWIFT_VERSION=swift-4.2.3-RELEASE
 matrix:
   include:
     - script: swift package update && swift test
       os: osx
-      osx_image: xcode10
+      osx_image: xcode10.1
     - script: swift package update && swift test
       os: linux
       sudo: required
