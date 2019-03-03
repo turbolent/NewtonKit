@@ -186,11 +186,4 @@ class NSOFTests: XCTestCase {
                        dataUnequalMessage(encoded2, data))
     }
 
-    static var allTests : [(String, (NSOFTests) -> () throws -> Void)] {
-        return [
-            ("testNSOF1", testNSOF1),
-            ("testNSOF2", testNSOF2),
-            ("testNSOF3", testNSOF3)
-        ]
-    }
 }

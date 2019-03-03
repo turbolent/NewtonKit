@@ -172,12 +172,4 @@ class NewtonDockTests: XCTestCase {
         XCTAssertEqual(encrypted, expected)
     }
 
-    static var allTests : [(String, (NewtonDockTests) -> () throws -> Void)] {
-        return [
-            ("testDockLayerReadRequestToDockPacket", testDockLayerReadRequestToDockPacket),
-            ("testDockLayerReadResultPacket", testDockLayerReadResultPacket),
-            ("testDockLayerReadPartial", testDockLayerReadPartial),
-            ("testDES", testDES),
-        ]
-    }
 }

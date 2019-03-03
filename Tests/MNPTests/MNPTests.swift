@@ -160,13 +160,4 @@ class MNPTests: XCTestCase {
             ]), 0xC9F6)
     }
 
-    static var allTests : [(String, (MNPTests) -> () throws -> Void)] {
-        return [
-            ("testPacketLayerReadRequest", testPacketLayerReadRequest),
-            ("testPacketLayerReadTransfer", testPacketLayerReadTransfer),
-            ("testPacketLayerWrite", testPacketLayerWrite),
-            ("testLinkRequestPacket", testLinkRequestPacket),
-            ("testCRC", testCRC),
-        ]
-    }
 }

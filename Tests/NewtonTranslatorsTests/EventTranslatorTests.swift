@@ -40,9 +40,4 @@ class EventTranslatorTests: XCTestCase {
         ))
     }
 
-    static var allTests : [(String, (EventTranslatorTests) -> () throws -> Void)] {
-        return [
-            ("testEventTranslator", testEventTranslator),
-        ]
-    }
 }

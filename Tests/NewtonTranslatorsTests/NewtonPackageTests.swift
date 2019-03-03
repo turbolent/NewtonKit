@@ -135,12 +135,4 @@ class NewtonPackageTests: XCTestCase {
         XCTAssertThrowsError(try NewtonPackageInfo(data: data))
     }
 
-    static var allTests : [(String, (NewtonPackageTests) -> () throws -> Void)] {
-        return [
-            ("testParsePackage1", testParsePackage1),
-            ("testParsePackage2", testParsePackage2),
-            ("testInvalidSignature", testInvalidSignature),
-            ("testTooShort", testTooShort)
-        ]
-    }
 }

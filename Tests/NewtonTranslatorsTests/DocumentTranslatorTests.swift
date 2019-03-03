@@ -106,9 +106,4 @@ class DocumentTranslatorTests: XCTestCase {
                                 html: expectedHTML))
     }
 
-    static var allTests : [(String, (DocumentTranslatorTests) -> () throws -> Void)] {
-        return [
-            ("testDocumentTranslator", testDocumentTranslator),
-        ]
-    }
 }
