@@ -22,21 +22,59 @@ public struct NewtonInfo {
         }
     }
 
+    public init(
+        newtonID: UInt32,
+        manufacturerCode: UInt32,
+        machineTypeCode: UInt32,
+        romVersion: UInt32,
+        romStage: UInt32,
+        ramSize: UInt32,
+        screenHeight: UInt32,
+        screenWidth: UInt32,
+        patchVersion: UInt32,
+        newtonOSVersion: UInt32,
+        internalStoreSignature: UInt32,
+        screenResolutionV: UInt32,
+        screenResolutionH: UInt32,
+        screenDepth: UInt32,
+        systemFlags: UInt32,
+        serialNumber: UInt64,
+        targetProtocol: UInt32
+    ) {
+        self.newtonID = newtonID
+        self.manufacturerCode = manufacturerCode
+        self.machineTypeCode = machineTypeCode
+        self.romVersion = romVersion
+        self.romStage = romStage
+        self.ramSize = ramSize
+        self.screenHeight = screenHeight
+        self.screenWidth = screenWidth
+        self.patchVersion = patchVersion
+        self.newtonOSVersion = newtonOSVersion
+        self.internalStoreSignature = internalStoreSignature
+        self.screenResolutionV = screenResolutionV
+        self.screenResolutionH = screenResolutionH
+        self.screenDepth = screenDepth
+        self.systemFlags = systemFlags
+        self.serialNumber = serialNumber
+        self.targetProtocol = targetProtocol
+    }
+
     /// A unique id to identify a particular newton
     public let newtonID: UInt32
 
     /// A decimal integer indicating the manufacturer of the device
-    private let manufacturerCode: UInt32
+    public let manufacturerCode: UInt32
 
-    private var manufacturer: GestaltManufacturer? {
+    public var manufacturer: GestaltManufacturer? {
         return GestaltManufacturer(rawValue: manufacturerCode)
     }
 
     /// A decimal integer indicating the hardware type of the device
-    private let machineTypeCode: UInt32
+    public let machineTypeCode: UInt32
 
     /// The hardware type of the device
-    private var machineType: GestaltMachineType? {
+    public var machineType: GestaltMachineType? {
         return GestaltMachineType(rawValue: machineTypeCode)
     }
 
@@ -76,8 +114,7 @@ public struct NewtonInfo {
     /// various bit flags
     public let systemFlags: UInt32
 
-    // TODO:
-    private let serialNumber: UInt64
+    public let serialNumber: UInt64
 
     public let targetProtocol: UInt32
 }
