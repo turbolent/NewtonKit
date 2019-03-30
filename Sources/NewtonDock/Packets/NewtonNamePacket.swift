@@ -39,7 +39,7 @@ public struct NewtonNamePacket: DecodableDockPacket {
         data = data.dropFirst(length)
 
         // Newton name
-        guard let name = String(data: data, encoding: .utf16BigEndian) else {
+        guard let name = String(data: data.dropLast(2), encoding: .utf16BigEndian) else {
             throw DecodingError.invalidString
         }
         self.name = name
