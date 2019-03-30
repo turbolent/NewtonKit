@@ -61,7 +61,8 @@ public final class DockPacketLayer {
         CallResultPacket.self,
         BackupSoupDonePacket.self,
         ChangedEntryPacket.self,
-        AddedIDPacket.self
+        AddedIDPacket.self,
+        RefTestPacket.self
     ]
 
     private static let indeterminateLengthCommands: Set<DockCommand> = [
@@ -162,9 +163,9 @@ public final class DockPacketLayer {
                 result.append(data)
             } else {
                 result.append(UInt32(length).bigEndianData)
+                result.append(data)
 
                 let roundedLength = DockPacketLayer.roundToBoundary(length: length)
-                result.append(data)
                 let padding = Int(roundedLength - length)
                 if padding != 0 {
                     result.append(Data(repeating: 0, count: padding))
