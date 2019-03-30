@@ -65,11 +65,19 @@ public final class NewtonFrame: NewtonObject {
     }
 
     public func getInteger(_ tagName: String) -> Int32? {
-        return (valuesByTag[tagName] as? NewtonInteger)?.integer
+        return valuesByTag[tagName]?.integerValue
     }
 
     public func getString(_ tagName: String) -> String? {
-        return (valuesByTag[tagName] as? NewtonString)?.string
+        return valuesByTag[tagName]?.stringValue
+    }
+
+    public func getDouble(_ tagName: String) -> Double? {
+        return valuesByTag[tagName]?.doubleValue
+    }
+
+    public func getSymbolName(_ tagName: String) -> String? {
+        return valuesByTag[tagName]?.symbolName
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
