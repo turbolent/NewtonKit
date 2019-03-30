@@ -109,7 +109,7 @@ public final class NewtonSerialPort {
         guard let fileDescriptor = fileDescriptor else {
             throw Error.notOpen
         }
-        source?.cancel()
+        stopReading()
         source = createSource(fileDescriptor: fileDescriptor)
         source?.resume()
     }
