@@ -81,20 +81,20 @@ public func translateToHTMLDocument(paperroll: NewtonFrame) -> Node {
         .map { $0.1.bottom }
         .max() ?? 0
 
-    return html([
-        head(title: "", content: [
-            style(unsafe: noteStyle),
-        ]),
-        body([
-            div(
-                [
-                    Attribute("style", "height: \(height)px" as String?) as Attribute<Tag.Div>,
-                    id("content")
+    return .html(
+        .head(
+            .title(""),
+            .style(unsafe: noteStyle)
+        ),
+        .body(
+            .div(attributes: [
+                    .style(unsafe: "height: \(height)px"),
+                    .id("content")
                 ],
-                nodesAndDimensions.map { $0.0 }
+                .fragment(nodesAndDimensions.map { $0.0 })
             )
-        ])
-    ])
+        )
+    )
 }
 
 
@@ -144,11 +144,12 @@ public func translateToHTMLNode(paraFrame: NewtonFrame) -> (Node, Dimensions)? {
         .replacingOccurrences(of: " ", with: "&nbsp;")
 
     return (
-        p([
-            Attribute("style", styleAttribute)
-        ], [
+        .p(
+            attributes: [
+                .style(unsafe: styleAttribute)
+            ],
             .raw(encoded)
-        ]),
+        ),
         dimensions
     )
 }

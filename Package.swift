@@ -26,7 +26,7 @@ let package = Package(
         .library(name: "CDNS_SD", targets: ["CDNS_SD"])
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-html.git", from: "0.2.0")
+        .package(url: "https://github.com/pointfreeco/swift-html.git", from: "0.3.0")
     ],
     targets: [
         .target(name: "NewtonCommon"),
