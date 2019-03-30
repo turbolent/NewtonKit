@@ -46,7 +46,7 @@ public class NewtonObjectEncoder {
 
     public static func encodeRoot(newtonObject: NewtonObject) -> Data {
         // Version
-        var data = Data(bytes: [2])
+        var data = Data([2])
         let encoder = NewtonObjectEncoder()
         data.append(encoder.encode(newtonObject: newtonObject))
         return data
@@ -59,7 +59,7 @@ public class NewtonObjectEncoder {
 
             let identifier = ObjectIdentifier(anyNewtonObject)
             if let precedentID = precedents[identifier] {
-                var data = Data(bytes: [NewtonObjectType.precedent.rawValue])
+                var data = Data([NewtonObjectType.precedent.rawValue])
                 data.append(NewtonObjectEncoder.encode(xlong: precedentID))
                 return data
             } else {
@@ -71,7 +71,7 @@ public class NewtonObjectEncoder {
 
     public static func encode(xlong: Int32) -> Data {
         if 0..<255 ~= xlong {
-            return Data(bytes: [UInt8(xlong)])
+            return Data([UInt8(xlong)])
         }
         var data = Data()
         data.append(0xFF)

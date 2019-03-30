@@ -73,7 +73,7 @@ public final class NewtonFrame: NewtonObject {
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
-        var data = Data(bytes: [NewtonObjectType.frame.rawValue])
+        var data = Data([NewtonObjectType.frame.rawValue])
         data.append(NewtonObjectEncoder.encode(xlong: Int32(tags.count)))
         for tag in tags {
             data.append(encoder.encode(newtonObject: tag))

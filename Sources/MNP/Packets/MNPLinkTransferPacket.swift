@@ -72,7 +72,7 @@ public struct MNPLinkTransferPacket: MNPPacket {
     }
 
     public func encode() -> Data {
-        var result = Data(bytes: [
+        var result = Data([
             2,
             MNPPacketType.LT.rawValue,
             sendSequenceNumber

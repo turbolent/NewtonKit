@@ -35,7 +35,7 @@ public final class NewtonInteger: NewtonObject {
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
-        var data = Data(bytes: [NewtonObjectType.immediate.rawValue])
+        var data = Data([NewtonObjectType.immediate.rawValue])
         data.append(NewtonObjectEncoder.encode(xlong: integer << 2))
         return data
     }

@@ -174,19 +174,16 @@ public final class MNPPacketLayer {
                 throw DecodingError.invalidSize
             }
 
-            let headerLength: UInt16
             let packetType: MNPPacketType
             let data: Data
 
             if self.data[0] == 255 {
-                headerLength = UInt16(self.data[1]) * 256 + UInt16(self.data[2])
                 guard let type = MNPPacketType(rawValue: self.data[3]) else {
                     throw DecodingError.invalidType
                 }
                 packetType = type
                 data = self.data.dropFirst(4)
             } else {
-                headerLength = UInt16(self.data[0])
                 guard let type = MNPPacketType(rawValue: self.data[1]) else {
                     throw DecodingError.invalidType
                 }

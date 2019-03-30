@@ -13,7 +13,7 @@ class MNPTests: XCTestCase {
     func testPacketLayerReadRequest() throws {
 
         let layer = MNPPacketLayer()
-        let data = Data(bytes: [
+        let data = Data([
             0x16, 0x10, 0x2,  // start sequence
 
             // header
@@ -54,7 +54,7 @@ class MNPTests: XCTestCase {
     func testPacketLayerReadTransfer() throws {
 
         let layer = MNPPacketLayer()
-        let data = Data(bytes: [
+        let data = Data([
             0x16, 0x10, 0x02, 0x02, 0x04, 0x02, 0x6e, 0x65,
             0x77, 0x74, 0x64, 0x6f, 0x63, 0x6b, 0x6e, 0x61,
             0x6d, 0x65, 0x00, 0x00, 0x00, 0x5a, 0x00, 0x00,
@@ -93,9 +93,9 @@ class MNPTests: XCTestCase {
 
     func testPacketLayerWrite() {
         let layer = MNPPacketLayer()
-        let data = Data(bytes: [0xF0, 0xF1, 0xF2, .DLE, 0xF3, 0xF4])
+        let data = Data([0xF0, 0xF1, 0xF2, .DLE, 0xF3, 0xF4])
         let result = layer.write(data: data)
-        let expected = Data(bytes: [
+        let expected = Data([
             0x16, 0x10, 0x02,  // start sequence
             0xF0, 0xF1, 0xF2, .DLE, .DLE, 0xF3, 0xF4,  // data, with escaped DLE
             0x10, 0x03, 0x2e, 0xc9  // end sequence with CRC
@@ -106,7 +106,7 @@ class MNPTests: XCTestCase {
 
     func testLinkRequestPacket() throws {
 
-        let initialData = Data(bytes: [
+        let initialData = Data([
             0x2,  // constant parameter 1
             0x1, 0x6, 0x1, 0x0, 0x0, 0x0, 0x0, 0xff,  // constant parameter 2
             0x2, 0x1, 0x2,  // framing mode = 0x2
@@ -122,7 +122,7 @@ class MNPTests: XCTestCase {
         XCTAssertTrue(linkRequestPacket.dataPhaseOptimization.maxInfoLength256)
         XCTAssertTrue(linkRequestPacket.dataPhaseOptimization.fixedFieldLTAndLAFrames)
 
-        let expectedEncoding = Data(bytes: [
+        let expectedEncoding = Data([
             // header
             0x17, // length of header = 23
             0x1,  // type = LR

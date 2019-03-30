@@ -17,7 +17,7 @@ public struct NewtonNil: NewtonObject {
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
-        return Data(bytes: [NewtonObjectType.nil.rawValue])
+        return Data([NewtonObjectType.nil.rawValue])
     }
 }
 

@@ -36,7 +36,7 @@ public struct FileDescriptor {
     public func read(count: Int) throws -> Data? {
         let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
         defer {
-            buffer.deallocate(capacity: count)
+            buffer.deallocate()
         }
         #if os(Linux) || os(FreeBSD)
         let status = Glibc.read(fd, buffer, count)

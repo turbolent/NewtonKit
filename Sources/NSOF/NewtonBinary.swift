@@ -45,7 +45,7 @@ public final class NewtonBinary: NewtonObject {
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
-        var data = Data(bytes: [NewtonObjectType.binary.rawValue])
+        var data = Data([NewtonObjectType.binary.rawValue])
         data.append(NewtonObjectEncoder.encode(xlong: Int32(self.data.count)))
         data.append(encoder.encode(newtonObject: `class`))
         data.append(self.data)

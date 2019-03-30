@@ -93,7 +93,7 @@ public struct MNPLinkAcknowledgementPacket: MNPPacket {
     }
 
     public func encode() -> Data {
-        return Data(bytes: [
+        return Data([
             3,
             MNPPacketType.LA.rawValue,
             receiveSequenceNumber,

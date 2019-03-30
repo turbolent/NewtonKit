@@ -7,13 +7,13 @@ import IOKit.serial
 
 internal extension io_object_t {
 
-    internal subscript<T>(key: String) -> T? {
+    subscript<T>(key: String) -> T? {
         let cfKey = key as CFString
         return IORegistryEntryCreateCFProperty(self, cfKey, kCFAllocatorDefault, 0)?
             .takeUnretainedValue() as? T
     }
 
-    internal func getParentProperty<T>(key: String) -> T? {
+    func getParentProperty<T>(key: String) -> T? {
         let cfKey = key as CFString
         let options = IOOptionBits(kIORegistryIterateRecursively | kIORegistryIterateParents)
         return IORegistryEntrySearchCFProperty(self, kIOServicePlane, cfKey, kCFAllocatorDefault, options)

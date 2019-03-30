@@ -46,7 +46,7 @@ public struct NewtonCharacter: NewtonObject {
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
-        return Data(bytes: [
+        return Data([
             NewtonObjectType.character.rawValue,
             character
         ])

@@ -35,7 +35,7 @@ public struct MNPLinkRequestPacket: MNPPacket {
     /// This constant parameter shall be the third octet of the header field.
     /// The value of this constant is an octet value of 2.
 
-    private static let constantParameter1 = Data(bytes: [0x2])
+    private static let constantParameter1 = Data([0x2])
 
 
     /// ### A.6.4.1.4 Variable parameter 1:
@@ -45,7 +45,7 @@ public struct MNPLinkRequestPacket: MNPPacket {
     /// This constant parameter shall be an octet sequence of value (1,6,1,0,0,0,0,255).
 
     private static let constantParameter2 =
-        Data(bytes: [0x1, 0x6, 0x1, 0x0, 0x0, 0x0, 0x0, 0xff])
+        Data([0x1, 0x6, 0x1, 0x0, 0x0, 0x0, 0x0, 0xff])
 
 
     /// ### A.6.4.1.5 Variable parameter 2:

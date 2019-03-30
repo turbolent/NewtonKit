@@ -37,7 +37,7 @@ public final class NewtonSymbol: NewtonObject {
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
-        var data = Data(bytes: [NewtonObjectType.symbol.rawValue])
+        var data = Data([NewtonObjectType.symbol.rawValue])
         let nameData = name.data(using: .ascii)!
         data.append(NewtonObjectEncoder.encode(xlong: Int32(nameData.count)))
         data.append(nameData)

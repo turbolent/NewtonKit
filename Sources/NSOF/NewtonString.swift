@@ -42,7 +42,7 @@ public final class NewtonString: NewtonObject {
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
-        var data = Data(bytes: [NewtonObjectType.string.rawValue])
+        var data = Data([NewtonObjectType.string.rawValue])
         var stringData = string.data(using: .utf16BigEndian)!
         stringData.append(contentsOf: [0, 0])
         data.append(NewtonObjectEncoder.encode(xlong: Int32(stringData.count)))

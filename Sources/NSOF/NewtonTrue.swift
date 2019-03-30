@@ -31,7 +31,7 @@ public struct NewtonTrue: NewtonObject {
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
-        return Data(bytes: [
+        return Data([
             NewtonObjectType.immediate.rawValue,
             0x1A
         ])

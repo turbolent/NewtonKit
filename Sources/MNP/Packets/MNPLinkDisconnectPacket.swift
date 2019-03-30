@@ -73,7 +73,7 @@ public struct MNPLinkDisconnectPacket: MNPPacket {
     }
 
     public func encode() -> Data {
-        return Data(bytes: [
+        return Data([
             4,
             MNPPacketType.LD.rawValue,
             0x1, 0x1, reason.rawValue

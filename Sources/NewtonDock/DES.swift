@@ -92,7 +92,7 @@ private func unpack(_ x: UInt64) -> UInt64 {
 
 private func generateSubkeys(_ keyBytes: [UInt8]) throws -> [UInt64] {
 
-    guard let key = UInt64(bigEndianData: Data(bytes: keyBytes)) else {
+    guard let key = UInt64(bigEndianData: Data(keyBytes)) else {
         throw DESError.invalidKeySize
     }
 

@@ -35,7 +35,7 @@ public struct NewtonMagicPointer: NewtonObject {
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
-        var data = Data(bytes: [NewtonObjectType.immediate.rawValue])
+        var data = Data([NewtonObjectType.immediate.rawValue])
         data.append(NewtonObjectEncoder.encode(xlong: (pointer << 2) | 3))
         return data
     }

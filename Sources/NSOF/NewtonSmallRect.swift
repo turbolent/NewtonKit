@@ -48,7 +48,7 @@ public final class NewtonSmallRect: NewtonObject {
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
-        return Data(bytes: [
+        return Data([
             NewtonObjectType.smallRect.rawValue,
             top, left, bottom, right
         ])

@@ -41,7 +41,7 @@ public final class NewtonPlainArray: NewtonObject {
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
-        var data = Data(bytes: [NewtonObjectType.plainArray.rawValue])
+        var data = Data([NewtonObjectType.plainArray.rawValue])
         data.append(NewtonObjectEncoder.encode(xlong: Int32(values.count)))
         for value in values {
             data.append(encoder.encode(newtonObject: value))

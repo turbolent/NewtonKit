@@ -24,7 +24,7 @@ public struct NewtonUnicodeCharacter: NewtonObject {
     }
 
     public func encode(encoder: NewtonObjectEncoder) -> Data {
-        var data = Data(bytes: [NewtonObjectType.unicodeCharacter.rawValue])
+        var data = Data([NewtonObjectType.unicodeCharacter.rawValue])
         data.append(character.bigEndianData)
         return data
     }

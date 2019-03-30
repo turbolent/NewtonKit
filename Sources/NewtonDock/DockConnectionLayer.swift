@@ -32,7 +32,7 @@ public final class DockConnectionLayer {
     private static let timeout: UInt32 = 60
 
     private static let desktopKey =
-        Data(bytes: [0x64, 0x23, 0xef, 0x02, 0xfb, 0xcd, 0xc5, 0xa5])
+        Data([0x64, 0x23, 0xef, 0x02, 0xfb, 0xcd, 0xc5, 0xa5])
 
     private static let desktopApps: NewtonPlainArray =
         [
