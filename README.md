@@ -31,7 +31,7 @@ The connection is succesfully established once `Connected` appears, at which poi
 On your computer, run:
 
 ```sh
-swift run <path-to-serial-device>
+swift run serial <path-to-serial-device>
 ```
 
 Where `<path-to-serial-device>` is the path to the serial device the Newton is connected to. On macOS, you should use the `/dev/cu.usbserial-*` device which appears when a USB-to-serial adapter is used. On Linux, the device name is likely `/dev/ttyUSB*` or `/dev/ttyS*`.
