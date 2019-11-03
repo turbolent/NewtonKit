@@ -55,11 +55,12 @@ public final class NewtonBinary: NewtonObject {
     public var doubleValue: Double? {
         guard
             let classSymbol = `class` as? NewtonSymbol,
-            classSymbol.name.caseInsensitiveCompare("real") == .orderedSame
+            classSymbol.name.caseInsensitiveCompare("real") == .orderedSame,
+            let integer = UInt64(bigEndianData: data)
         else {
             return nil
         }
-        return Double(bitPattern: UInt64(bigEndian: data.withUnsafeBytes { $0.pointee } ))
+        return Double(bitPattern: integer)
     }
 }
 

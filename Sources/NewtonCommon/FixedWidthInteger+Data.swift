@@ -1,30 +1,33 @@
 import Foundation
 
-// TODO:
-// Unsure if the pointers in the closures passed to withUnsafeBytes
-// need to be rebound:
-// `UnsafeRawPointer($0).bindMemory(to: Self.self, capacity: 1)`
-
 public extension FixedWidthInteger {
 
-    init?(littleEndianData data: Data) {
+    private static func loadNative(data: Data) -> Self? {
         guard data.count >= MemoryLayout<Self>.size else {
             return nil
         }
 
-        self = data.withUnsafeBytes {
-            Self(littleEndian: $0.pointee)
+        // Copy the data to avoid loading from unaligned data
+        let endIndex = data.startIndex.advanced(by: MemoryLayout<Self>.size)
+        let range = data.startIndex..<endIndex
+
+        return data
+            .subdata(in: range)
+            .withUnsafeBytes { $0.load(as: Self.self) }
+    }
+
+    init?(littleEndianData data: Data) {
+        guard let native = Self.loadNative(data: data) else {
+            return nil
         }
+        self = native.littleEndian
     }
 
     init?(bigEndianData data: Data) {
-        guard data.count >= MemoryLayout<Self>.size else {
+        guard let native = Self.loadNative(data: data) else {
             return nil
         }
-
-        self = data.withUnsafeBytes {
-            Self(bigEndian: $0.pointee)
-        }
+        self = native.bigEndian
     }
 
     var littleEndianData: Data {

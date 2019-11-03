@@ -58,14 +58,13 @@ public struct FileDescriptor {
     }
 
     public func write(data: Data) throws {
-        _ = try data.withUnsafeBytes { (p: UnsafePointer<UInt8>) in
-            let rawPointer = UnsafeRawPointer(p)
+        _ = try data.withUnsafeBytes { (p: UnsafeRawBufferPointer) in
             let count = data.count
 
             #if os(Linux) || os(FreeBSD)
-            let status = Glibc.write(fd, rawPointer, count)
+            let status = Glibc.write(fd, p.baseAddress, count)
             #elseif os(macOS) || os(iOS)
-            let status = Darwin.write(fd, rawPointer, count)
+            let status = Darwin.write(fd, p.baseAddress, count)
             #endif
 
             guard status == count else {

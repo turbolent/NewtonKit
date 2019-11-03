@@ -172,4 +172,28 @@ class NewtonDockTests: XCTestCase {
         XCTAssertEqual(encrypted, expected)
     }
 
+
+    func testNewtonInfoDecoding() {
+        let data = Data([
+            247, 72, 13, 158, 1, 0, 0, 0,
+            16, 0, 48, 0, 0, 2, 0, 2,
+            0, 0, 128, 0, 0, 62, 208,
+            0, 0, 0, 1, 224, 0, 0, 1,
+            64, 0, 0, 0, 0, 0, 0, 0,
+            1, 247, 116, 111, 110, 0, 0, 0,
+            100, 0, 0, 0, 100, 0, 0, 0,
+            4, 0, 0, 0, 3, 0, 0, 78,
+            101, 119, 116, 111, 110, 0, 0, 0,
+            11, 0, 66, 0, 97, 0, 115, 0,
+            116, 0, 105, 0, 97, 0, 110,
+            0, 32, 0, 77, 0, 252, 0, 108,
+            0, 108, 0, 101, 0, 114, 0, 0,
+            0, 0
+        ])
+
+        let info = NewtonInfo.decode(data: data)
+
+        XCTAssertEqual(info.screenWidth, 320)
+        XCTAssertEqual(info.screenHeight, 480)
+    }
 }

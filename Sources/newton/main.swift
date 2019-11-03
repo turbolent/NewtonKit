@@ -43,7 +43,11 @@ case .serial:
     let serialPort = try NewtonSerialPort(path: path)
 
     serialPort.onCancel = { error in
-        fatalError("Serial port encountered error: \(error)")
+        if let error = error {
+            fatalError("Serial connection encountered error: \(error)")
+        } else {
+            fatalError("Serial connection cancelled")
+        }
     }
 
     let mnpPacketLayer = MNPPacketLayer()

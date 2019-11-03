@@ -195,11 +195,11 @@ public final class DockConnectionLayer {
         }
     }
 
-    internal func write(packet: EncodableDockPacket) throws {
+    public func write(packet: EncodableDockPacket) throws {
         try onWrite?(packet)
     }
 
-    internal func sendError() throws {
+    public func sendError() throws {
         // TODO: or protocolError?
         try write(packet: ResultPacket(error: .desktopError))
         try disconnect()
@@ -244,16 +244,16 @@ public final class DockConnectionLayer {
         state = .loadingPackage
     }
 
-    internal func startDesktopControl() throws {
+    public func startDesktopControl() throws {
         try write(packet: DesktopInControlPacket())
     }
 
-    internal func completeOperation() throws {
+    public func completeOperation() throws {
         try write(packet: OperationDonePacket())
         state = .connected
     }
 
-    internal func acknowledgeOperationCanceled() throws {
+    public func acknowledgeOperationCanceled() throws {
         try write(packet: OperationCanceledAcknowledgementPacket())
         state = .connected
     }

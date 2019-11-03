@@ -5,21 +5,31 @@ import Foundation
 public struct NewtonInfo {
 
     public static func decode(data: Data) -> NewtonInfo {
-        var data = data
-
-        let count = MemoryLayout<NewtonInfo>.size / MemoryLayout<UInt32>.size
-        data.withUnsafeMutableBytes { (p: UnsafeMutablePointer<UInt32>) in
-            var p = p
-            for _ in 0..<count {
-                p.pointee = UInt32(bigEndian: p.pointee)
-                p = p.successor()
+        let rawInfo = data
+            .subdata(in: data.startIndex..<data.endIndex)
+            .withUnsafeBytes { (pointer: UnsafeRawBufferPointer) in
+                pointer.load(as: NewtonInfo.self)
             }
-        }
-        return data.withUnsafeBytes { (pointer: UnsafePointer<NewtonInfo>) in
-            // TODO: unsure if memory needs to be rebound:
-            // `UnsafeRawPointer(pointer).bindMemory(to: NewtonInfo.self, capacity: 1).pointee`
-            pointer.pointee
-        }
+
+        return NewtonInfo(
+            newtonID: rawInfo.newtonID.bigEndian,
+            manufacturerCode: rawInfo.manufacturerCode.bigEndian,
+            machineTypeCode: rawInfo.machineTypeCode.bigEndian,
+            romVersion: rawInfo.romVersion.bigEndian,
+            romStage: rawInfo.romStage.bigEndian,
+            ramSize: rawInfo.ramSize.bigEndian,
+            screenHeight: rawInfo.screenHeight.bigEndian,
+            screenWidth: rawInfo.screenWidth.bigEndian,
+            patchVersion: rawInfo.patchVersion.bigEndian,
+            newtonOSVersion: rawInfo.newtonOSVersion.bigEndian,
+            internalStoreSignature: rawInfo.internalStoreSignature.bigEndian,
+            screenResolutionV: rawInfo.screenResolutionV.bigEndian,
+            screenResolutionH: rawInfo.screenResolutionH.bigEndian,
+            screenDepth: rawInfo.screenDepth.bigEndian,
+            systemFlags: rawInfo.systemFlags.bigEndian,
+            serialNumber: rawInfo.serialNumber.bigEndian,
+            targetProtocol: rawInfo.targetProtocol.bigEndian
+        )
     }
 
     public init(

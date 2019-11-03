@@ -10,19 +10,19 @@ public protocol NewtonObject {
 
 public extension NewtonObject {
 
-    public var integerValue: Int32? {
+    var integerValue: Int32? {
         return (self as? NewtonInteger)?.integer
     }
 
-    public var stringValue: String? {
+    var stringValue: String? {
         return (self as? NewtonString)?.string
     }
 
-    public var doubleValue: Double? {
+    var doubleValue: Double? {
         return (self as? NewtonBinary)?.doubleValue
     }
 
-    public var symbolName: String? {
+    var symbolName: String? {
         return (self as? NewtonSymbol)?.name
     }
 }
