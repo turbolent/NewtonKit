@@ -1,4 +1,4 @@
-// swift-tools-version:5.1
+// swift-tools-version:5.3
 import PackageDescription
 
 let package = Package(
@@ -26,7 +26,9 @@ let package = Package(
         .library(name: "CDNS_SD", targets: ["CDNS_SD"])
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-html.git", from: "0.3.0")
+        .package(name: "Html",
+                 url: "https://github.com/pointfreeco/swift-html.git",
+                 from: "0.3.0")
     ],
     targets: [
         .target(name: "NewtonCommon"),
