@@ -3,11 +3,23 @@ name: Test
 on: [push]
 
 jobs:
-  build:
+  macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
       - uses: swift-actions/setup-swift@v1
+      - name: Build
+        run: swift build
+      - name: Run tests
+        run: swift test
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: swift-actions/setup-swift@v1
+      - name: Install dependencies
+        run: sudo apt-get install -y libavahi-compat-libdnssd-dev
       - name: Build
         run: swift build
       - name: Run tests
