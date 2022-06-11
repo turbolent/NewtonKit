@@ -142,11 +142,7 @@ public final class NewtonServer {
 
         try reuseAddress(fd: CFSocketGetNative(socket))
 
-        #if os(Linux) || os(FreeBSD)
-        let socketSuccess = kCFSocketSuccess
-        #elseif os(macOS) || os(iOS)
         let socketSuccess = CFSocketError.success
-        #endif
 
         guard CFSocketSetAddress(socket, addressData) == socketSuccess else {
             CFSocketInvalidate(socket)
