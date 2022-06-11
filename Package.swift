@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.6
 import PackageDescription
 
 let package = Package(
@@ -8,8 +8,14 @@ let package = Package(
                     targets: ["newton"]),
         .library(name: "NewtonKit",
                  targets: [
-                    "NewtonKit", "NSOF", "NewtonCommon", "MNP", "NewtonDock",
-                    "NewtonSerialPort", "NewtonTranslators", "NewtonServer"
+                    "NewtonKit",
+                    "NSOF",
+                    "NewtonCommon",
+                    "MNP",
+                    "NewtonDock",
+                    "NewtonSerialPort",
+                    "NewtonTranslators",
+                    "NewtonServer"
                  ]),
         .library(name: "NSOF",
                  targets: ["NSOF"]),
@@ -26,9 +32,8 @@ let package = Package(
         .library(name: "CDNS_SD", targets: ["CDNS_SD"])
     ],
     dependencies: [
-        .package(name: "Html",
-                 url: "https://github.com/pointfreeco/swift-html.git",
-                 from: "0.3.0")
+        .package(url: "https://github.com/pointfreeco/swift-html.git",
+                 from: "0.4.0")
     ],
     targets: [
         .target(name: "NewtonCommon"),
@@ -41,16 +46,28 @@ let package = Package(
         .target(name: "NewtonDock",
                 dependencies: ["NewtonCommon", "NSOF"]),
         .target(name: "NewtonTranslators",
-                dependencies: ["NSOF", "Html"]),
+                dependencies: [
+                    "NSOF",
+                    .product(name: "Html",
+                             package: "swift-html")
+                ]),
         .target(name: "NewtonServer",
-                dependencies: ["NewtonCommon", "CDNS_SD"]),
+                dependencies: [
+                    "NewtonCommon",
+                    "CDNS_SD"
+                ]),
         .target(name: "NewtonKit",
                 dependencies: [
-                    "NSOF", "NewtonCommon", "MNP", "NewtonDock",
-                    "NewtonSerialPort", "NewtonTranslators", "NewtonServer"
+                    "NSOF",
+                    "NewtonCommon",
+                    "MNP",
+                    "NewtonDock",
+                    "NewtonSerialPort",
+                    "NewtonTranslators",
+                    "NewtonServer"
                 ]),
-        .target(name: "newton",
-                dependencies: ["NewtonKit"]),
+        .executableTarget(name: "newton",
+                          dependencies: ["NewtonKit"]),
         .systemLibrary(name: "CDNS_SD"),
         .testTarget(name: "MNPTests",
                     dependencies: ["MNP"]),
