@@ -6,7 +6,7 @@ import Dispatch
 #if os(Linux) || os(FreeBSD)
 import var Glibc.errno
 #elseif os(macOS) || os(iOS)
-import var Darwin.C.errno
+import var Darwin.errno
 #endif
 
 

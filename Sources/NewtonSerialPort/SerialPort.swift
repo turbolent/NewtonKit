@@ -9,15 +9,9 @@ public struct SerialPort: Hashable {
         return lhs.calloutDevice == rhs.calloutDevice
     }
 
-    #if swift(>=4.2)
     public func hash(into hasher: inout Hasher) {
         hasher.combine(calloutDevice)
     }
-    #else
-    public var hashValue: Int {
-        return calloutDevice.hashValue
-    }
-    #endif
 
     public var name: String {
         if let usbVendorName = usbVendorName,
