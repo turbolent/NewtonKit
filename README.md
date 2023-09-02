@@ -3,13 +3,9 @@
 
 ---
 
-[![Build Status](https://travis-ci.org/turbolent/NewtonKit.svg?branch=master)](https://travis-ci.org/turbolent/NewtonKit)
-
 An implementation of the Apple Newton Dock protocol in Swift.
 
-
 ## Usage
-
 
 ### Connection type
 
