@@ -5,7 +5,7 @@ import NewtonKit
 import NewtonDock
 import NSOF
 import NewtonTranslators
-import Html
+import HTML
 
 
 final class CommandPrompt {
@@ -244,7 +244,8 @@ final class CommandPrompt {
 
         if case "paperroll" as NewtonSymbol = entry["viewStationery"] {
             let document = translateToHTMLDocument(paperroll: entry)
-            let html = debugRender(document)
+            var html = ""
+            render(node: document, into: &html)
             let url = try backupFileURL(application: "Notes", filename: "\(uniqueID).html")
             try html.write(to: url, atomically: true, encoding: .utf8)
         } else if case "meeting" as NewtonSymbol = entry["viewStationery"] {

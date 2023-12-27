@@ -3,7 +3,7 @@ import Foundation
 import XCTest
 @testable import NewtonTranslators
 import NSOF
-import Html
+import HTML
 
 
 class EventTranslatorTests: XCTestCase {

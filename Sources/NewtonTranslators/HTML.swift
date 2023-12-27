@@ -1,4 +1,4 @@
-import Html
+import HTML
 import NSOF
 import Foundation
 
@@ -23,9 +23,14 @@ public func translateToDocument(paperroll: NewtonFrame) -> Document {
         .map { Date(minutesSince1904: Int($0)) }
 
     let htmlDocument = translateToHTMLDocument(paperroll: paperroll)
-    let html = debugRender(htmlDocument)
+    var html = ""
+    render(node: htmlDocument, into: &html)
 
-    return Document(creationDate: creationDate, lastModifiedDate: lastModifiedDate, html: html)
+    return Document(
+        creationDate: creationDate,
+        lastModifiedDate: lastModifiedDate,
+        html: html
+    )
 }
 
 private let noteStyle = """
@@ -81,19 +86,25 @@ public func translateToHTMLDocument(paperroll: NewtonFrame) -> Node {
         .map { $0.1.bottom }
         .max() ?? 0
 
-    return .html(
-        .head(
-            .title(""),
-            .style(unsafe: noteStyle)
-        ),
-        .body(
-            .div(attributes: [
-                    .style(unsafe: "height: \(height)px"),
-                    .id("content")
+    return .Element(
+        tag: "html",
+        child: .Fragment([
+            .Element(
+                tag: "head",
+                child: .Fragment([
+                    .Element(tag: "title", child: .Text("")),
+                    .Element(tag: "style", child: .Text(noteStyle))
+                ])
+            ),
+            .Element(
+                tag: "body",
+                attributes: [
+                    (key: "style", value: "height: \(height)px"),
+                    (key: "id", value: "content")
                 ],
-                .fragment(nodesAndDimensions.map { $0.0 })
+                child: .Fragment(nodesAndDimensions.map { $0.0 })
             )
-        )
+        ])
     )
 }
 
@@ -139,16 +150,17 @@ public func translateToHTMLNode(paraFrame: NewtonFrame) -> (Node, Dimensions)? {
         "height: \(height)px"
     ].joined(separator: "; ")
 
-    let encoded = escapeTextNode(text: text)
+    let encoded = escapeText(text)
         .replacingOccurrences(of: "\r", with: "<br>")
         .replacingOccurrences(of: " ", with: "&nbsp;")
 
     return (
-        .p(
+        .Element(
+            tag: "p",
             attributes: [
-                .style(unsafe: styleAttribute)
+                (key: "style", value: styleAttribute)
             ],
-            .raw(encoded)
+            child: .Raw(encoded)
         ),
         dimensions
     )

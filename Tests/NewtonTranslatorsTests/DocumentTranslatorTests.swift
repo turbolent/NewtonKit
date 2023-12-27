@@ -3,8 +3,7 @@ import Foundation
 import XCTest
 @testable import NewtonTranslators
 import NSOF
-import Html
-
+import HTML
 
 class DocumentTranslatorTests: XCTestCase {
 
@@ -45,12 +44,7 @@ class DocumentTranslatorTests: XCTestCase {
             ])
 
         let expectedHTML = """
-            <html>
-              <head>
-                <title>
-                </title>
-                <style>
-                    html {
+            <html><head><title></title><style>  html {
                 box-sizing: border-box;
                 font-family: sans-serif;
                 font-size: 18px;
@@ -75,30 +69,7 @@ class DocumentTranslatorTests: XCTestCase {
                 background-size: 4px 28px;
                 margin-top: 2px;
                 min-height: 100%;
-              }
-                </style>
-              </head>
-              <body>
-                <div style="height: 197px"
-                     id="content">
-                  <p style="position: absolute;
-                             left: 10px;
-                             width: 113px;
-                             top: 7px;
-                             height: 78px">
-                    This&nbsp;is&nbsp;a&nbsp;test<br><br>
-                  </p>
-                  <p style="position: absolute;
-                             left: 322px;
-                             width: 48px;
-                             top: 175px;
-                             height: 22px">
-                    Hello!
-                  </p>
-                </div>
-              </body>
-            </html>
-
+              }</style></head><body style="height: 197px" id="content"><p style="position: absolute; left: 10px; width: 113px; top: 7px; height: 78px">This&nbsp;is&nbsp;a&nbsp;test<br><br></p><p style="position: absolute; left: 322px; width: 48px; top: 175px; height: 22px">Hello!</p></body></html>
             """
         XCTAssertEqual(document,
                        Document(creationDate: parseDate("1996-07-08 13:00:00")!,
