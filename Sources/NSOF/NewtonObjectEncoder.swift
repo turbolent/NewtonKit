@@ -30,9 +30,7 @@ public class NewtonObjectEncoder {
 
     private static let precedentTypes: Set<ObjectIdentifier> =
         Set(NewtonObjectType.precedentTypes.compactMap {
-            $0.swiftType.map {
-                ObjectIdentifier($0)
-            }
+            $0.swiftType.map(ObjectIdentifier.init)
         })
 
     private static func isPrecedentType(type: NewtonObject.Type) -> Bool {
@@ -54,10 +52,8 @@ public class NewtonObjectEncoder {
 
     public func encode(newtonObject: NewtonObject) -> Data {
         let type = Swift.type(of: newtonObject)
-        if NewtonObjectEncoder.isPrecedentType(type: type),
-            let anyNewtonObject = newtonObject as? AnyObject
-        {
-            let identifier = ObjectIdentifier(anyNewtonObject)
+        if NewtonObjectEncoder.isPrecedentType(type: type) {
+            let identifier = ObjectIdentifier(newtonObject as AnyObject)
             if let precedentID = precedents[identifier] {
                 var data = Data([NewtonObjectType.precedent.rawValue])
                 data.append(NewtonObjectEncoder.encode(xlong: precedentID))

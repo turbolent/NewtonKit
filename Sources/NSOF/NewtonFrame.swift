@@ -24,7 +24,7 @@ public final class NewtonFrame: NewtonObject {
     public static func decode(decoder: NewtonObjectDecoder) throws -> NewtonFrame {
 
         // Number of slots (xlong)
-        guard let slotCount = decoder.decodeXLong()  else {
+        guard let slotCount = decoder.decodeXLong() else {
             throw DecodingError.missingSlotCount
         }
 

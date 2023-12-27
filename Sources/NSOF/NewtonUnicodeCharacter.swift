@@ -2,7 +2,7 @@
 import Foundation
 
 
-public struct NewtonUnicodeCharacter: NewtonObject {
+public struct NewtonUnicodeCharacter: NewtonObject, Equatable {
 
     public enum DecodingError: Error {
         case missingCharacter
@@ -35,13 +35,5 @@ extension NewtonUnicodeCharacter: CustomStringConvertible {
 
     public var description: String {
         return String(format: "$\\u%4x", character)
-    }
-}
-
-
-extension NewtonUnicodeCharacter: Equatable {
-
-    public static func ==(lhs: NewtonUnicodeCharacter, rhs: NewtonUnicodeCharacter) -> Bool {
-        return lhs.character == rhs.character
     }
 }
